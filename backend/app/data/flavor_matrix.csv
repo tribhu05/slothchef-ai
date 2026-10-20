@@ -1,0 +1,51 @@
+ingredient,category,umami,acidity,richness,moisture,saltiness,sweetness,default_cook_mins,pan_type
+ramen noodles,starch,2.0,0.5,1.5,1.0,4.0,0.5,3,pot
+rice (cooked/leftover),starch,1.0,0.5,1.0,2.0,1.0,1.0,4,skillet
+corn tortilla chips,starch,1.5,0.8,4.0,0.5,5.0,0.5,2,skillet
+pasta (boiled/instant),starch,1.0,0.5,1.0,2.5,1.0,1.0,6,pot
+bread slices,starch,1.0,1.0,1.5,1.5,2.0,2.0,2,skillet
+eggs,protein,6.5,0.5,6.0,4.0,2.0,0.5,3,skillet
+canned black beans,protein,4.0,1.5,1.0,6.0,3.0,1.5,3,skillet
+canned chickpeas,protein,4.5,1.0,2.0,5.0,2.5,1.5,4,skillet
+canned tuna,protein,7.0,1.0,2.0,5.0,4.0,0.0,2,bowl
+tofu (firm),protein,3.0,0.5,2.5,7.0,1.0,0.5,5,skillet
+peanut butter,fat/condiment,5.5,0.5,8.5,1.0,4.0,3.5,1,bowl
+cheddar cheese,protein/fat,7.5,2.0,8.0,2.0,6.0,0.5,2,skillet
+parmesan cheese,protein/fat,9.5,2.5,6.5,1.0,8.0,0.5,1,bowl
+butter,fat/condiment,2.0,0.2,9.5,1.0,3.0,0.2,1,skillet
+olive oil,fat/condiment,1.0,0.5,9.5,0.5,0.0,0.0,1,skillet
+mayonnaise,fat/condiment,3.0,3.0,8.5,3.0,4.0,1.0,1,bowl
+soy sauce,sauce,9.0,2.0,0.5,8.0,9.5,1.5,1,bowl
+sriracha,sauce,4.0,6.5,1.0,7.0,6.0,4.5,1,bowl
+kimchi,veggie/ferment,8.0,8.5,1.0,7.0,6.5,2.0,3,skillet
+garlic,allium,6.0,1.0,0.5,3.0,0.5,2.5,2,skillet
+yellow onion,allium,4.0,1.5,0.5,6.0,0.5,4.0,5,skillet
+green onion,allium,4.5,1.0,0.5,6.0,0.5,2.0,1,bowl
+salsa (jarred),sauce,5.0,7.0,0.5,8.0,5.5,3.0,2,skillet
+canned diced tomatoes,sauce/veg,5.5,7.5,0.5,8.5,3.0,4.0,5,skillet
+coconut milk (canned),fat/condiment,3.0,1.0,8.0,6.0,1.0,4.0,4,skillet
+curry powder,spice,4.0,0.5,0.5,0.5,1.0,1.0,1,skillet
+frozen peas,veggie,3.0,1.0,0.5,6.5,0.5,5.0,2,skillet
+spinach (fresh/frozen),veggie,4.0,1.5,0.5,8.0,1.0,1.0,2,skillet
+sesame oil,fat/condiment,4.5,0.5,9.5,0.5,0.5,0.5,1,bowl
+honey,sweetener,0.5,1.0,0.0,2.0,0.0,9.5,1,bowl
+lemon juice,acid,1.0,9.5,0.0,9.0,0.0,1.5,1,bowl
+gochujang,sauce,7.0,3.0,1.5,5.0,7.0,6.0,2,skillet
+mushrooms,veggie,8.5,1.0,0.5,7.5,1.0,1.5,4,skillet
+hot dog / sausage,protein,6.5,1.0,7.5,4.0,7.0,1.0,4,skillet
+bacon,protein/fat,8.5,0.5,8.5,2.0,8.0,0.5,4,skillet
+dijon mustard,condiment,3.5,8.0,2.0,5.0,6.0,1.0,1,bowl
+miso paste,ferment,9.0,2.0,2.5,5.0,8.5,3.0,2,pot
+oats (rolled),starch,1.5,0.5,1.5,1.0,0.5,1.5,3,bowl
+apple (sliced),fruit/sweet,1.0,4.0,0.2,7.5,0.0,7.0,1,bowl
+cabbage,veggie,3.0,1.0,0.2,7.0,0.5,3.0,4,skillet
+frozen corn,veggie,3.0,1.0,1.0,6.0,0.5,6.5,2,skillet
+black pepper,spice,2.5,0.5,0.5,0.5,0.0,0.5,1,bowl
+chili flakes,spice,2.0,1.0,0.5,0.5,0.0,1.0,1,bowl
+tortilla wrap,starch,1.0,0.5,2.0,2.0,3.0,1.0,1,skillet
+cream cheese,fat/dairy,3.0,3.5,8.5,4.0,4.5,2.0,1,bowl
+instant mashed potatoes,starch,2.0,0.5,2.0,1.0,3.5,1.0,2,bowl
+frozen dumplings,protein/starch,6.5,1.0,4.5,5.0,5.0,1.5,5,skillet
+bbq sauce,sauce,4.0,5.5,0.5,6.0,5.5,8.0,1,bowl
+worcestershire sauce,sauce,8.0,6.0,0.5,7.0,7.5,3.5,1,bowl
+mozzarella cheese,fat/dairy,5.0,1.5,7.5,5.0,4.0,1.0,2,skillet
