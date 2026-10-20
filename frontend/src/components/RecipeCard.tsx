@@ -21,7 +21,10 @@ import {
   BellRing,
   Printer,
   Volume2,
-  VolumeX
+  VolumeX,
+  AlertTriangle,
+  Info,
+  Plus
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { playTimerDoneChime, playStepCheckSound, speakStep, stopSpeaking } from '../utils/audio';
@@ -31,13 +34,15 @@ interface RecipeCardProps {
   onRegenerate: () => void;
   isLoading: boolean;
   onOpenExplainer?: () => void;
+  onAddMissingAndCook?: (ingredientName: string) => void;
 }
 
 export const RecipeCard: React.FC<RecipeCardProps> = ({ 
   recipe, 
   onRegenerate, 
   isLoading,
-  onOpenExplainer 
+  onOpenExplainer,
+  onAddMissingAndCook
 }) => {
   const [copied, setCopied] = useState(false);
   const [viewMode, setViewMode] = useState<'overview' | 'cook_along'>('overview');
@@ -303,6 +308,137 @@ export const RecipeCard: React.FC<RecipeCardProps> = ({
               </p>
             </div>
 
+            {/* Food Safety & Cooking Feasibility Notice */}
+            {recipe.safety_warnings && recipe.safety_warnings.length > 0 && (
+              <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/25 text-amber-300 text-xs flex items-start gap-3 animate-in fade-in">
+                <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+                <div className="space-y-1">
+                  <span className="font-bold uppercase tracking-wider text-amber-300 block mb-0.5">
+                    Cooking Feasibility & Food Safety Advisory:
+                  </span>
+                  {recipe.safety_warnings.map((warn, wIdx) => (
+                    <p key={wIdx} className="leading-relaxed text-amber-200/90">{warn}</p>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* State: NEEDS_INGREDIENTS Spotlight Card */}
+            {recipe.status === "NEEDS_INGREDIENTS" && recipe.missing_suggestions && recipe.missing_suggestions.length > 0 && (
+              <div className="p-5 sm:p-6 rounded-3xl bg-[#202020] border-2 border-[#F4D779]/40 shadow-xl space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
+                <div className="flex items-center justify-between gap-3 flex-wrap">
+                  <div className="flex items-center gap-2 text-xs font-bold text-[#F4D779] uppercase tracking-wider">
+                    <Sparkles className="w-4 h-4 text-[#F4D779]" />
+                    <span>You're {recipe.missing_suggestions.length} ingredient away from a proper meal!</span>
+                  </div>
+                  <span className="text-[11px] font-mono text-[#A5A39D] bg-[#181818] px-2.5 py-1 rounded-full border border-white/[0.06]">
+                    Target: {recipe.title}
+                  </span>
+                </div>
+
+                <p className="text-xs text-[#F5F2EB] leading-relaxed">
+                  {recipe.decision_message || "Your pantry has the foundation, but adding one key item unlocks a cohesive, takeout-grade dish."}
+                </p>
+
+                <div className="space-y-3 pt-1">
+                  {recipe.missing_suggestions.map((sug, sIdx) => (
+                    <div key={sIdx} className="p-4 rounded-2xl bg-[#181818] border border-white/[0.08] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                      <div className="space-y-1 max-w-lg">
+                        <div className="flex items-center gap-2">
+                          <span className="font-display font-bold text-sm text-[#F4D779]">
+                            + {sug.ingredient_name}
+                          </span>
+                          <span className="text-[10px] uppercase font-semibold text-[#A5A39D] bg-[#242424] px-2 py-0.5 rounded-full">
+                            Missing Anchor
+                          </span>
+                        </div>
+                        <p className="text-xs text-[#A5A39D] leading-relaxed">
+                          {sug.reason}
+                        </p>
+                        {sug.substitutes && sug.substitutes.length > 0 && (
+                          <p className="text-[11px] text-[#A5A39D]/80">
+                            <span className="text-[#F5F2EB]/80 font-medium">Substitutes: </span>
+                            {sug.substitutes.join(", ")}
+                          </p>
+                        )}
+                      </div>
+
+                      <button
+                        onClick={() => onAddMissingAndCook?.(sug.ingredient_name)}
+                        className="px-4 py-2.5 rounded-xl bg-[#F4D779] hover:bg-[#E8CA6B] text-[#181818] font-bold text-xs flex items-center justify-center gap-2 shadow-md cursor-pointer transition-all shrink-0 hover:scale-[1.02] active:scale-[0.98]"
+                      >
+                        <Plus className="w-3.5 h-3.5 stroke-[3]" />
+                        <span>Add to Pan & Cook</span>
+                        <ArrowRight className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* State: NO_GOOD_MATCH Card */}
+            {recipe.status === "NO_GOOD_MATCH" && (
+              <div className="p-5 sm:p-6 rounded-3xl bg-[#202020] border-2 border-amber-500/30 shadow-xl space-y-4">
+                <div className="flex items-center gap-2 text-xs font-bold text-amber-400 uppercase tracking-wider">
+                  <Info className="w-4 h-4 text-amber-400" />
+                  <span>Culinary Reality Check</span>
+                </div>
+                <h3 className="font-display font-bold text-sm sm:text-base text-[#F5F2EB]">
+                  {recipe.decision_message}
+                </h3>
+                {recipe.fit_explanation && (
+                  <p className="text-xs text-[#A5A39D] leading-relaxed">
+                    {recipe.fit_explanation}
+                  </p>
+                )}
+
+                {recipe.missing_suggestions && recipe.missing_suggestions.length > 0 && (
+                  <div className="pt-2">
+                    <span className="text-xs font-semibold text-[#F4D779] block mb-2">
+                      Suggested pantry staples to anchor this meal:
+                    </span>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                      {recipe.missing_suggestions.map((sug, idx) => (
+                        <div key={idx} className="p-3 rounded-2xl bg-[#181818] border border-white/[0.06] flex items-center justify-between gap-2">
+                          <div>
+                            <span className="font-bold text-xs text-[#F5F2EB] block">
+                              {sug.ingredient_name}
+                            </span>
+                            <span className="text-[10px] text-[#A5A39D]">
+                              Unlocks: {sug.unlocks_recipe_title}
+                            </span>
+                          </div>
+                          <button
+                            onClick={() => onAddMissingAndCook?.(sug.ingredient_name)}
+                            className="px-3 py-1.5 rounded-lg bg-[#F4D779] hover:bg-[#E8CA6B] text-[#181818] font-bold text-[11px] flex items-center gap-1 cursor-pointer transition-all"
+                          >
+                            <Plus className="w-3 h-3" />
+                            <span>Add & Cook</span>
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Culinary Synergy Note (for READY dishes) */}
+            {recipe.status === "READY" && recipe.fit_explanation && (
+              <div className="p-4 bg-[#202020] rounded-2xl border border-white/[0.06] text-xs text-[#A5A39D] flex items-start gap-3">
+                <ChefHat className="w-4 h-4 text-[#F4D779] shrink-0 mt-0.5" />
+                <div>
+                  <span className="font-semibold text-[#F4D779] block mb-0.5">
+                    Culinary Pairing Physics:
+                  </span>
+                  <p className="leading-relaxed text-[#F5F2EB]/90">
+                    {recipe.fit_explanation}
+                  </p>
+                </div>
+              </div>
+            )}
+
             {/* Integrated Collapsible TabPFN Telemetry Bar */}
             <div className="bg-[#202020] rounded-2xl border border-white/[0.07] overflow-hidden">
               <div 
@@ -403,12 +539,15 @@ export const RecipeCard: React.FC<RecipeCardProps> = ({
               )}
             </div>
 
-            {/* Radical Sloth Shortcuts */}
-            <div>
-              <h3 className="font-display font-semibold text-xs uppercase tracking-wider text-[#A5A39D] mb-3 flex items-center gap-2">
-                <Award className="w-4 h-4 text-[#F4D779]" />
-                <span>Radical Sloth Shortcuts (No Prep Allowed)</span>
-              </h3>
+            {/* Radical Sloth Shortcuts & Steps (Only when a valid dish is ready or in progress) */}
+            {recipe.status !== "NO_GOOD_MATCH" && (
+              <>
+                {/* Radical Sloth Shortcuts */}
+                <div>
+                  <h3 className="font-display font-semibold text-xs uppercase tracking-wider text-[#A5A39D] mb-3 flex items-center gap-2">
+                    <Award className="w-4 h-4 text-[#F4D779]" />
+                    <span>Radical Sloth Shortcuts (No Prep Allowed)</span>
+                  </h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {recipe.sloth_shortcuts.map((sc, i) => (
                   <div
@@ -498,18 +637,20 @@ export const RecipeCard: React.FC<RecipeCardProps> = ({
               )}
             </div>
 
-            {/* Cleanup Audit Alert */}
-            <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-start gap-3 text-xs">
-              <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-              <div>
-                <span className="font-bold uppercase tracking-wider text-emerald-300 block mb-0.5">
-                  1-Pan Dish & Cleanup Audit:
-                </span>
-                <p className="leading-relaxed text-emerald-200/90">
-                  {recipe.cleanup_audit}
-                </p>
-              </div>
-            </div>
+                {/* Cleanup Audit Alert */}
+                <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-start gap-3 text-xs">
+                  <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                  <div>
+                    <span className="font-bold uppercase tracking-wider text-emerald-300 block mb-0.5">
+                      1-Pan Dish & Cleanup Audit:
+                    </span>
+                    <p className="leading-relaxed text-emerald-200/90">
+                      {recipe.cleanup_audit}
+                    </p>
+                  </div>
+                </div>
+              </>
+            )}
 
             {/* Footer Regenerate Action */}
             <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-white/[0.07]">

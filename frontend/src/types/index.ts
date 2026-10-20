@@ -10,6 +10,14 @@ export interface TabPFNPrediction {
   model_version: string;
 }
 
+export interface MissingIngredientSuggestion {
+  ingredient_name: string;
+  canonical_id: string;
+  reason: string;
+  unlocks_recipe_title: string;
+  substitutes: string[];
+}
+
 export interface SlothRecipe {
   id: string;
   title: string;
@@ -30,6 +38,11 @@ export interface SlothRecipe {
   cleanup_audit: string;
   open_weights_rationale: string;
   tabpfn_evidence: TabPFNPrediction;
+  status?: "READY" | "NEEDS_INGREDIENTS" | "NO_GOOD_MATCH";
+  decision_message?: string;
+  missing_suggestions?: MissingIngredientSuggestion[];
+  safety_warnings?: string[];
+  fit_explanation?: string;
 }
 
 export interface PresetDisaster {

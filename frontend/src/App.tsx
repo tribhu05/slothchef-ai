@@ -207,6 +207,18 @@ export const App: React.FC = () => {
     setSelectedPresetId(null);
   };
 
+  const handleAddMissingAndCook = (item: string) => {
+    let next: string[];
+    if (!selectedIngredients.some((i) => i.toLowerCase() === item.toLowerCase())) {
+      next = [...selectedIngredients, item];
+      setSelectedIngredients(next);
+      setSelectedPresetId(null);
+    } else {
+      next = selectedIngredients;
+    }
+    handleGenerate(next);
+  };
+
   return (
     <div className="min-h-screen flex flex-col bg-[#242424] text-[#F5F2EB] selection:bg-[#F4D779] selection:text-[#181818]">
       {/* Editorial Navigation Header */}
@@ -309,6 +321,7 @@ export const App: React.FC = () => {
                   onRegenerate={() => handleGenerate()}
                   isLoading={isLoading}
                   onOpenExplainer={() => setIsExplainerOpen(true)}
+                  onAddMissingAndCook={handleAddMissingAndCook}
                 />
               </div>
             ) : (

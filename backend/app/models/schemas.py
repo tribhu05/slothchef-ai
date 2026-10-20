@@ -31,6 +31,13 @@ class RecipeRequest(BaseModel):
     microwave_only: Optional[bool] = Field(False, description="Enforce microwave-only cooking")
     minimal_chopping: Optional[bool] = Field(True, description="Strict zero/minimal knife prep")
 
+class MissingIngredientSuggestion(BaseModel):
+    ingredient_name: str
+    canonical_id: str
+    reason: str
+    unlocks_recipe_title: str
+    substitutes: List[str] = Field(default_factory=list)
+
 class SlothRecipe(BaseModel):
     id: str
     title: str
@@ -51,4 +58,9 @@ class SlothRecipe(BaseModel):
     cleanup_audit: str
     open_weights_rationale: str
     tabpfn_evidence: TabPFNPrediction
+    status: str = Field("READY", description="READY, NEEDS_INGREDIENTS, or NO_GOOD_MATCH")
+    decision_message: Optional[str] = None
+    missing_suggestions: List[MissingIngredientSuggestion] = Field(default_factory=list)
+    safety_warnings: List[str] = Field(default_factory=list)
+    fit_explanation: Optional[str] = None
 

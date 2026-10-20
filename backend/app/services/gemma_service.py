@@ -4,6 +4,7 @@ import uuid
 import httpx
 from typing import List, Dict, Any, Optional
 from app.models.schemas import SlothRecipe, TabPFNPrediction
+from app.services.decision_engine import evaluate_pantry
 
 logger = logging.getLogger("slothchef.gemma")
 
@@ -555,6 +556,143 @@ class GemmaRecipeSynthesizer:
         max_active_minutes: int = 5
     ) -> SlothRecipe:
         effective_vessel = "Microwave Safe Bowl" if microwave_only else vessel
+        
+        # 1. Run multi-stage pantry decision engine
+        decision = evaluate_pantry(ingredients)
+        
+        rationale = (
+            "Open-source AI matters here because fridge inventory and late-night habits are deeply personal. "
+            "Running TabPFN and Gemma 2 on-device means zero personal data is harvested by cloud advertising brokers, "
+            "zero subscription fees, and 100% offline autonomy in campers, cabins, or power outages."
+        )
+
+        # -------------------------------------------------------------
+        # STATE 1: NO_GOOD_MATCH
+        # -------------------------------------------------------------
+        if decision.status == "NO_GOOD_MATCH":
+            recipe_id = f"sloth-{uuid.uuid4().hex[:8]}"
+            return SlothRecipe(
+                id=recipe_id,
+                title="No Credible Meal Possible",
+                subtitle="Your pantry currently lacks a core carbohydrate or protein base",
+                tagline="True Sloth Wisdom: Don't dirty a pan on ingredients that can't form a satisfying meal.",
+                sloth_efficiency="100% Energy Conserved (Stove Kept Off)",
+                sloth_score=99,
+                image_url="https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&w=1200&q=80",
+                vessel_type=effective_vessel,
+                utensil="1 Fork",
+                dishes_to_wash=0,
+                active_standing_minutes=0,
+                total_minutes=0,
+                harmony_score=min(35.0, tabpfn.harmony_score),
+                ingredients_used=ingredients,
+                sloth_shortcuts=[
+                    "Do not turn on the stove yet — seasonings and raw aromatics alone will burn or disappoint.",
+                    "Add one of the suggested staple anchors below to unlock an instant 1-pan dish."
+                ],
+                steps=[
+                    "Check your cupboard for an anchor staple: Ramen noodles, leftover cooked rice, bread, or eggs.",
+                    "Click 'Add to Pan & Cook' below on any staple you find, and SlothChef will handle the rest."
+                ],
+                cleanup_audit="0 pans dirtied. Zero energy wasted.",
+                open_weights_rationale=rationale,
+                tabpfn_evidence=tabpfn,
+                status="NO_GOOD_MATCH",
+                decision_message=decision.decision_message,
+                missing_suggestions=decision.missing_suggestions,
+                safety_warnings=decision.safety_warnings,
+                fit_explanation=decision.fit_explanation
+            )
+
+        # -------------------------------------------------------------
+        # STATE 2: NEEDS_INGREDIENTS
+        # -------------------------------------------------------------
+        if decision.status == "NEEDS_INGREDIENTS":
+            curated = decision.selected_curated_recipe
+            recipe_id = f"sloth-{uuid.uuid4().hex[:8]}"
+            active_time = min(max_active_minutes, curated.active_minutes if curated else 3)
+            sloth_score = curated.base_sloth_score if curated else 95
+            
+            steps = list(curated.steps) if curated else [
+                "Gather your base ingredients.",
+                "Add the missing staple to bind the dish together.",
+                "Heat and cook in 1 vessel."
+            ]
+
+            return SlothRecipe(
+                id=recipe_id,
+                title=curated.title if curated else "Almost a Complete Meal",
+                subtitle=curated.subtitle if curated else "You are one key ingredient away from greatness",
+                tagline=curated.tagline if curated else "So close to dinner with zero knife skills.",
+                sloth_efficiency=f"{sloth_score}% Projected Efficiency",
+                sloth_score=sloth_score,
+                image_url=curated.image_url if curated else "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=1200&q=80",
+                vessel_type=effective_vessel,
+                utensil="1 Fork" if not (curated and "curry" in curated.id) else "1 Spoon",
+                dishes_to_wash=1,
+                active_standing_minutes=active_time,
+                total_minutes=curated.total_minutes if curated else 4,
+                harmony_score=tabpfn.harmony_score,
+                ingredients_used=ingredients,
+                sloth_shortcuts=curated.shortcuts if curated else ["Add the missing item to complete the dish."],
+                steps=steps,
+                cleanup_audit=curated.cleanup_audit if curated else f"1 {effective_vessel} and 1 fork to wash.",
+                open_weights_rationale=rationale,
+                tabpfn_evidence=tabpfn,
+                status="NEEDS_INGREDIENTS",
+                decision_message=decision.decision_message,
+                missing_suggestions=decision.missing_suggestions,
+                safety_warnings=decision.safety_warnings,
+                fit_explanation=decision.fit_explanation
+            )
+
+        # -------------------------------------------------------------
+        # STATE 3: READY (Curated Match or Safe Synthesis)
+        # -------------------------------------------------------------
+        curated = decision.selected_curated_recipe
+        if curated:
+            recipe_id = f"sloth-{uuid.uuid4().hex[:8]}"
+            active_time = min(max_active_minutes, curated.active_minutes)
+            sloth_score = curated.base_sloth_score
+
+            steps = list(curated.steps)
+            shortcuts = list(curated.shortcuts)
+            if microwave_only:
+                steps = [
+                    f"Combine ingredients into your {effective_vessel} with 2 tbsp water or broth.",
+                    "Cover with a damp paper towel and microwave on HIGH for 2 minutes.",
+                    "Stir with your fork, microwave for another 60 seconds, and let stand 1 minute."
+                ]
+                shortcuts.append("Microwave in the eating bowl to skip stove cleanup completely.")
+
+            return SlothRecipe(
+                id=recipe_id,
+                title=curated.title,
+                subtitle=curated.subtitle,
+                tagline=curated.tagline,
+                sloth_efficiency=f"{sloth_score}% Energy Conserved",
+                sloth_score=sloth_score,
+                image_url=curated.image_url,
+                vessel_type=effective_vessel,
+                utensil="1 Fork" if not ("curry" in curated.id or "oat" in curated.id) else "1 Spoon",
+                dishes_to_wash=1,
+                active_standing_minutes=active_time,
+                total_minutes=curated.total_minutes,
+                harmony_score=tabpfn.harmony_score,
+                ingredients_used=ingredients,
+                sloth_shortcuts=shortcuts,
+                steps=steps,
+                cleanup_audit=curated.cleanup_audit,
+                open_weights_rationale=rationale,
+                tabpfn_evidence=tabpfn,
+                status="READY",
+                decision_message=decision.decision_message,
+                missing_suggestions=[],
+                safety_warnings=decision.safety_warnings,
+                fit_explanation=decision.fit_explanation
+            )
+
+        # Fallback to Ollama or dynamic offline if verified candidate wasn't pre-indexed
         prompt = (
             f"Ingredients available: {', '.join(ingredients)}\n"
             f"Vessel preference: {effective_vessel}\n"
@@ -566,10 +704,7 @@ class GemmaRecipeSynthesizer:
             f"Generate an ultra-lazy, one-pan recipe."
         )
 
-        # 1. Try local Ollama Gemma 2 first
         gen_data = await self._try_ollama_generate(prompt)
-        
-        # 2. Fallback to dynamic offline culinary synthesizer
         if not gen_data:
             gen_data = self._synthesize_dynamic_offline(
                 ingredients=ingredients,
@@ -579,19 +714,12 @@ class GemmaRecipeSynthesizer:
             )
 
         recipe_id = f"sloth-{uuid.uuid4().hex[:8]}"
-        
-        rationale = (
-            "Open-source AI matters here because fridge inventory and late-night habits are deeply personal. "
-            "Running TabPFN and Gemma 2 on-device means zero personal data is harvested by cloud advertising brokers, "
-            "zero subscription fees, and 100% offline autonomy in campers, cabins, or power outages."
-        )
-
         active_time = min(max_active_minutes, tabpfn.active_standing_minutes)
         sloth_score = max(75, min(99, int(100 - (active_time * 2) - 1)))
 
         return SlothRecipe(
             id=recipe_id,
-            title=gen_data.get("title", "The Sloth Scramble"),
+            title=gen_data.get("title", "The Sloth Skillet"),
             subtitle=gen_data.get("subtitle", "Low-effort culinary survival"),
             tagline=gen_data.get("tagline", "Less dishes, more resting."),
             sloth_efficiency=gen_data.get("sloth_efficiency", f"{sloth_score}% Energy Conserved"),
@@ -608,7 +736,12 @@ class GemmaRecipeSynthesizer:
             steps=gen_data.get("steps", ["Heat pan.", "Dump ingredients.", "Eat."]),
             cleanup_audit=gen_data.get("cleanup_audit", f"1 {effective_vessel} and 1 fork to wash."),
             open_weights_rationale=rationale,
-            tabpfn_evidence=tabpfn
+            tabpfn_evidence=tabpfn,
+            status="READY",
+            decision_message="Custom recipe generated from validated ingredients.",
+            missing_suggestions=[],
+            safety_warnings=decision.safety_warnings,
+            fit_explanation=decision.fit_explanation
         )
 
 # Global singleton
