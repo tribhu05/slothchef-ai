@@ -67,6 +67,36 @@ export const App: React.FC = () => {
           setPresets(p);
           if (p.length > 0) {
             setSelectedPresetId(p[0].id);
+            setSelectedIngredients(p[0].ingredients);
+            const initVessel = p[0].vessel_preference || "One Skillet";
+            setVesselPreference(initVessel);
+
+            // Auto-generate initial recipe so the application never loads empty
+            try {
+              setIsLoading(true);
+              const genRes = await fetch('/api/recipe/generate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  ingredients: p[0].ingredients,
+                  vessel_preference: initVessel,
+                  sloth_intensity: "Maximum",
+                  max_active_minutes: 5,
+                  max_cookware_count: 1,
+                  max_utensil_count: 1,
+                  microwave_only: false,
+                  minimal_chopping: true
+                })
+              });
+              if (genRes.ok) {
+                const recipeData = await genRes.json();
+                setRecipe(recipeData);
+              }
+            } catch (e) {
+              console.error("Initial recipe generation error:", e);
+            } finally {
+              setIsLoading(false);
+            }
           }
         }
         
@@ -171,21 +201,25 @@ export const App: React.FC = () => {
       />
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-8">
-        {/* Editorial Hero Intro */}
-        <div className="max-w-2xl mb-8">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#181818] border border-white/[0.08] text-xs text-[#F4D779] font-medium mb-3">
-            <span>🦥 SlothChef Culinary Studio</span>
-            <span className="w-1 h-1 rounded-full bg-[#F4D779]" />
-            <span className="text-[#A5A39D]">DEV Hacktoberfest 2026</span>
+        {/* Editorial Hero Intro - Compact Banner */}
+        <div className="mb-6 flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-white/[0.06] pb-5">
+          <div className="max-w-2xl">
+            <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-[#181818] border border-white/[0.08] text-[11px] text-[#F4D779] font-medium mb-2">
+              <span>🦥 SlothChef Studio</span>
+              <span className="w-1 h-1 rounded-full bg-[#F4D779]" />
+              <span className="text-[#A5A39D]">DEV Hacktoberfest 2026</span>
+            </div>
+            <h1 className="font-display font-bold text-2xl sm:text-3xl lg:text-4xl text-[#F5F2EB] tracking-tight leading-snug">
+              Cooking should take less effort than deciding what to eat.
+            </h1>
+            <p className="text-xs sm:text-sm text-[#A5A39D] mt-1">
+              Your kitchen. Your ingredients. Absolutely minimal effort. Powered by <span className="text-[#F5F2EB] font-medium">Prior Labs TabPFN-3.5</span> & <span className="text-[#F5F2EB] font-medium">Google Gemma 2</span>.
+            </p>
           </div>
-          <h1 className="font-display font-bold text-3xl sm:text-5xl text-[#F5F2EB] tracking-tight leading-tight mb-2">
-            Cooking should take less effort than deciding what to eat.
-          </h1>
-          <p className="text-sm sm:text-base text-[#A5A39D] leading-relaxed">
-            Your kitchen. Your ingredients. Absolutely minimal effort. Powered by 
-            <strong className="text-[#F5F2EB]"> Prior Labs TabPFN-3.5</strong> and 
-            <strong className="text-[#F5F2EB]"> Google Gemma 2</strong>.
-          </p>
+          <div className="hidden md:flex items-center gap-2 shrink-0 text-xs text-[#A5A39D] bg-[#181818] px-3.5 py-2 rounded-2xl border border-white/[0.06]">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+            <span className="font-medium text-[#F5F2EB]">Zero-Effort Mode</span>
+          </div>
         </div>
 
         {/* Error Alert */}

@@ -67,7 +67,7 @@ export const SlothHeader: React.FC<SlothHeaderProps> = ({ onOpenExplainer, infer
           {/* Real Inference Mode Badge */}
           <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full ${badge.bgColor} ${badge.borderColor} border font-medium ${badge.textColor}`}>
             <span className={`w-1.5 h-1.5 rounded-full ${badge.dotColor} animate-pulse`} />
-            <span className="text-[11px] font-mono tracking-tight">{badge.label}</span>
+            <span className="text-[11px] font-medium tracking-tight">{badge.label}</span>
           </div>
 
           {/* TabPFN Telemetry Button */}
