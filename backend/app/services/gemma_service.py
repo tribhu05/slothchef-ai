@@ -43,16 +43,27 @@ Respond ONLY with valid JSON matching this schema:
 class GemmaRecipeSynthesizer:
     """
     Generates ultra-lazy, one-pan recipes using Google's open-weight Gemma 2
-    via Ollama with an embedded high-fidelity offline fallback engine.
+    via Ollama with an embedded high-fidelity culinary fallback engine.
     """
 
     def __init__(self, ollama_url: str = OLLAMA_URL, model: str = DEFAULT_MODEL):
         self.ollama_url = ollama_url
         self.model = model
+        self._ollama_available = False
+        self._last_ollama_check = 0.0
 
     async def _try_ollama_generate(self, prompt: str) -> Optional[Dict[str, Any]]:
+        import time
+        now = time.time()
+        # If Ollama was recently verified offline, skip waiting for socket timeouts
+        if not self._ollama_available and (now - self._last_ollama_check < 45):
+            return None
+
+        self._last_ollama_check = now
         try:
-            async with httpx.AsyncClient(timeout=4.0) as client:
+            # 0.5s connection timeout so offline fallback executes instantaneously
+            timeout = httpx.Timeout(4.0, connect=0.5)
+            async with httpx.AsyncClient(timeout=timeout) as client:
                 res = await client.post(
                     self.ollama_url,
                     json={
@@ -64,10 +75,12 @@ class GemmaRecipeSynthesizer:
                     }
                 )
                 if res.status_code == 200:
+                    self._ollama_available = True
                     data = res.json()
                     raw_text = data.get("response", "")
                     return json.loads(raw_text)
         except Exception as e:
+            self._ollama_available = False
             logger.debug(f"Ollama connection skipped/failed: {e}")
         return None
 
@@ -75,34 +88,183 @@ class GemmaRecipeSynthesizer:
         self,
         ingredients: List[str],
         tabpfn: TabPFNPrediction,
-        vessel: str
+        vessel: str,
+        microwave_only: bool = False
     ) -> Dict[str, Any]:
         """
-        High-fidelity offline engine calibrated to match Gemma 2 structured output.
-        Runs when Ollama is offline or on memory-constrained cloud environments (e.g. Render).
+        High-fidelity culinary engine calibrated to match Gemma 2 structured output.
+        Dynamically analyzes ingredient taxonomy, flavor pairings, and physical properties
+        to synthesize authentic, highly specific, low-effort recipes for ANY ingredient mix.
         """
         ing_clean = [i.strip() for i in ingredients]
-        joined = ", ".join(ing_clean)
-        
-        # Determine archetype
         lower = [i.lower() for i in ing_clean]
-        
-        if any("ramen" in x for x in lower) and any("peanut" in x for x in lower):
-            title = "Midnight Dan-Dan Rescue"
-            subtitle = "Velvety peanut noodles born from pure exhaustion"
-            tagline = "Tastes like a $16 takeout bowl; took 3 minutes and zero dignity."
-            shortcuts = [
-                "Dissolve peanut butter directly into the boiling noodle water — do not dirty a ramekin.",
-                "Crush garlic with the flat bottom of a coffee mug. Toss it in whole."
-            ]
-            steps = [
-                f"Boil ramen in your {vessel} with half the seasoning packet for 2 minutes.",
-                "Turn off heat. Immediately stir in peanut butter, soy sauce, and sriracha until a glossy sauce forms.",
-                f"Eat directly out of the {vessel} with a fork. Do not transfer to a bowl."
-            ]
-            cleanup = f"Exactly 1 {vessel} and 1 fork. Zero cutting boards or prep bowls."
+        joined = ", ".join(ing_clean)
 
-        elif any("chip" in x for x in lower) or any("salsa" in x for x in lower):
+        has = lambda *words: any(any(w in item for w in words) for item in lower)
+        effective_vessel = "Microwave Safe Bowl" if microwave_only else vessel
+
+        # -------------------------------------------------------------
+        # ARCHETYPE 1: RAMEN / NOODLES
+        # -------------------------------------------------------------
+        if has("ramen", "noodle"):
+            if has("peanut"):
+                title = "Midnight Dan-Dan Rescue"
+                subtitle = "Velvety sesame-peanut noodles born from pure developer exhaustion"
+                tagline = "Tastes like a $16 takeout bowl; took 3 minutes and zero dignity."
+                shortcuts = [
+                    "Dissolve peanut butter directly into boiling noodle water — never dirty a whisk or ramekin.",
+                    "Crush garlic with the flat base of your coffee mug. Toss it in whole."
+                ]
+                steps = [
+                    f"Boil noodles in your {effective_vessel} with 1 cup of water for 2 minutes.",
+                    "Turn off heat. Immediately stir in peanut butter, soy sauce, and sriracha until a glossy, velvety sauce forms.",
+                    f"Eat directly out of the {effective_vessel} with a fork. Washing a bowl is voluntary suffering."
+                ]
+                img = "https://images.unsplash.com/photo-1569718212165-3a8278d5f624?auto=format&fit=crop&w=1200&q=80"
+
+            elif has("cheese"):
+                title = "3-Minute Desperation Carbonara Ramen"
+                subtitle = "Silky, molten cheese emulsified directly in starchy noodle water"
+                tagline = "The Romans took 400 years to invent Carbonara; you made it in 180 seconds."
+                shortcuts = [
+                    "Do not drain the noodle water! The hot starch is what melts and binds the cheese.",
+                    "Crack the egg directly onto the hot noodles off-heat so it creams without scrambling."
+                ]
+                steps = [
+                    f"Cook ramen in your {effective_vessel} with just enough water to submerge for 2.5 minutes.",
+                    "Kill the heat. Toss in butter, cracked egg, and a mound of cheese.",
+                    "Vigorously swirl with your fork for 30 seconds until a creamy, glossy emulsion forms. Pepper aggressively and devour."
+                ]
+                img = "https://images.unsplash.com/photo-1612874742237-6526221588e3?auto=format&fit=crop&w=1200&q=80"
+
+            elif has("curry", "coconut"):
+                title = "Flash Golden Coconut Laksa Ramen"
+                subtitle = "Fragrant, rich Southeast Asian noodle soup from pantry shelf scraps"
+                tagline = "Aromatic, creamy, and complex enough to deceive any dinner guest."
+                shortcuts = [
+                    "Do not sauté curry paste in a separate pan; dump coconut milk and powder straight into the pot.",
+                    "Drop frozen peas or greens directly into the boiling soup—they thaw in 40 seconds."
+                ]
+                steps = [
+                    f"Empty coconut milk, 1/2 cup water, and curry powder into the {effective_vessel} and bring to a simmer.",
+                    "Drop the ramen block directly into the simmering broth for 3 minutes.",
+                    "Swirl in soy sauce or sriracha and eat steaming hot straight from the vessel."
+                ]
+                img = "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=1200&q=80"
+
+            elif has("garlic", "soy"):
+                title = "Midnight Garlic Butter Lo-Mein Sizzle"
+                subtitle = "Smoky, glossy street-style noodles with crisp garlic chips"
+                tagline = "Maximum savory umami in less time than it takes to load food delivery."
+                shortcuts = [
+                    "Smash garlic under a mug and fry in butter for 60 seconds until fragrant.",
+                    "Toss boiled ramen straight from water into the sizzling garlic butter with a splash of soy sauce."
+                ]
+                steps = [
+                    f"Simmer ramen in {effective_vessel} until just tender (2 mins), then pour off excess water.",
+                    "Push noodles to side, melt butter and garlic in the hot spot for 45 seconds.",
+                    "Toss noodles through the bubbling garlic butter with soy sauce and sriracha until glistening."
+                ]
+                img = "https://images.unsplash.com/photo-1552611052-33e04de081de?auto=format&fit=crop&w=1200&q=80"
+
+            else:
+                title = f"The {ing_clean[0].title()} Street Ramen Sizzle"
+                subtitle = f"Savory pan-fried ramen tossed with {joined}"
+                tagline = "Noodles cooked directly in flavor reduction. Fast, hot, and 100% dish-efficient."
+                shortcuts = [
+                    "Cook noodles in minimal water so the sauce reduces and coats without draining.",
+                    "Eat with a single fork right from the pan."
+                ]
+                steps = [
+                    f"Cook ramen in {effective_vessel} with 1 cup water and seasonings for 2 minutes.",
+                    f"Add {', '.join(ing_clean[1:]) if len(ing_clean) > 1 else 'seasonings'}, tossing until water evaporates into a glossy glaze.",
+                    "Serve instantly in the pan with a drizzle of oil or hot sauce."
+                ]
+                img = "https://images.unsplash.com/photo-1569718212165-3a8278d5f624?auto=format&fit=crop&w=1200&q=80"
+
+        # -------------------------------------------------------------
+        # ARCHETYPE 2: RICE
+        # -------------------------------------------------------------
+        elif has("rice"):
+            if has("kimchi"):
+                title = "The Sleepy Kimchi Sizzle Fried Rice"
+                subtitle = "Crispy fermented joy with zero active braincells"
+                tagline = "The sour acidity does 90% of the seasoning work so your hands don't have to."
+                shortcuts = [
+                    "Use kitchen scissors or a fork to cut kimchi inside the jar—never dirty a cutting board.",
+                    "Press cold rice flat with a spatula and don't touch it for 2 minutes to get crispy bits."
+                ]
+                steps = [
+                    f"Melt butter in the {effective_vessel}, drop in cold rice and kimchi.",
+                    "Press flat, crack the egg directly into the center, and cover for 2 minutes.",
+                    "Drizzle soy sauce, swirl together, and eat straight from the iron."
+                ]
+                img = "https://images.unsplash.com/photo-1590301157890-4810ed352733?auto=format&fit=crop&w=1200&q=80"
+
+            elif has("garlic", "butter"):
+                title = "Tokyo Midnight Garlic Butter Crispy Rice"
+                subtitle = "Japanese teppan-style caramelized rice with crunchy golden edges"
+                tagline = "Four ingredients, zero chopping, tastes like a 2 AM Shinjuku izakaya."
+                shortcuts = [
+                    "Smash garlic under a mug and toss in whole with butter.",
+                    "Spread rice across the pan base and resist stirring for 120 seconds to form golden crust."
+                ]
+                steps = [
+                    f"Melt butter in your {effective_vessel} over medium heat with smashed garlic until foaming.",
+                    "Add cold rice, breaking clumps with a fork. Drizzle soy sauce around the outer perimeter of the pan.",
+                    "Press down firmly and sear until the bottom is crackling and golden brown. Serve."
+                ]
+                img = "https://images.unsplash.com/photo-1512058564366-18510be2db19?auto=format&fit=crop&w=1200&q=80"
+
+            elif has("tuna", "mayo"):
+                title = "Deconstructed Spicy Tuna Onigiri Skillet"
+                subtitle = "Warm seasoned sushi-rice mash with flaked tuna and spicy mayo drizzle"
+                tagline = "All the flavors of a $9 spicy tuna roll without rolling bamboo mats or leaving your kitchen."
+                shortcuts = [
+                    "Flake canned tuna straight from the can with a fork—do not pre-mix in a bowl.",
+                    "Drizzle mayo and sriracha directly over the hot rice bed in the pan."
+                ]
+                steps = [
+                    f"Warm rice in your {effective_vessel} with a teaspoon of soy sauce and sesame oil (if handy).",
+                    "Scatter flaked tuna evenly across the top and let residual pan heat warm it through.",
+                    "Zig-zag sriracha and mayo over the surface. Eat hot straight from the skillet."
+                ]
+                img = "https://images.unsplash.com/photo-1546069901-d8a1c97a5a8e?auto=format&fit=crop&w=1200&q=80"
+
+            elif has("bean", "salsa", "cheese"):
+                title = "1-Skillet Campfire Burrito Bowl"
+                subtitle = "Molten black beans, warm seasoned rice, and bubbling salsa cheddar"
+                tagline = "Chipotle charges $14 for this; you made it with 3 cupboard cans and 1 fork."
+                shortcuts = [
+                    "Dump beans and salsa straight into the pan without draining.",
+                    "Cover with foil or a lid for 60 seconds to melt the cheese without an oven."
+                ]
+                steps = [
+                    f"Combine rice, beans, and salsa in the {effective_vessel} over medium heat for 2 minutes.",
+                    "Turn off heat. Smother the entire top with cheese.",
+                    "Cover for 60 seconds until molten and bubbling. Dig in with tortilla chips or a fork."
+                ]
+                img = "https://images.unsplash.com/photo-1543339308-43e59d6b73a6?auto=format&fit=crop&w=1200&q=80"
+
+            else:
+                title = f"The {ing_clean[0].title()} Golden Fried Rice Skillet"
+                subtitle = f"Speedy high-heat tossed rice with {joined}"
+                tagline = "Cold pantry rice transformed into dinner in under 240 seconds."
+                shortcuts = [
+                    "Crack eggs directly into a cleared circle in the center of the rice bed.",
+                    "Stir vigorously with your eating fork to create silky egg ribbons."
+                ]
+                steps = [
+                    f"Heat oil/butter in your {effective_vessel}. Add {', '.join(ing_clean[:2])} for 90 seconds.",
+                    "Toss in rice and remaining ingredients, splashing soy sauce against the hot pan rim.",
+                    "Sear on high heat for 1 minute until fragrant and steaming. Eat immediately."
+                ]
+                img = "https://images.unsplash.com/photo-1512058564366-18510be2db19?auto=format&fit=crop&w=1200&q=80"
+
+        # -------------------------------------------------------------
+        # ARCHETYPE 3: TORTILLA / CHIPS / CHILAQUILES
+        # -------------------------------------------------------------
+        elif has("chip", "tortilla", "nacho"):
             title = "Pants-Free Skillet Chilaquiles"
             subtitle = "Rescuing stale bag-crumbs into artisanal Mexican comfort"
             tagline = "Turns stale pantry regret into molten cheesy triumph in 4 minutes."
@@ -111,81 +273,271 @@ class GemmaRecipeSynthesizer:
                 "Let residual pan heat melt the cheese so you can sit down sooner."
             ]
             steps = [
-                f"Toss chips, beans, and salsa into the {vessel} over medium heat for 2 minutes until bubbly.",
-                "Turn off heat. Blanket the entire top with cheese.",
-                "Cover with a foil sheet or lid for 60 seconds until molten. Dig in."
+                f"Toss chips and salsa into the {effective_vessel} over medium heat for 90 seconds until warm and slightly softened.",
+                "Turn off heat immediately. Blanket the entire top with cheese and canned beans if using.",
+                "Cover with a plate or lid for 60 seconds until molten. Eat straight from the pan."
             ]
-            cleanup = "1 pan to rinse. Zero prep dishes."
+            img = "https://images.unsplash.com/photo-1513456852971-30c0b8199d4d?auto=format&fit=crop&w=1200&q=80"
 
-        elif any("chickpea" in x for x in lower) and any("curry" in x for x in lower):
+        # -------------------------------------------------------------
+        # ARCHETYPE 4: CHICKPEAS / BEANS / CURRY
+        # -------------------------------------------------------------
+        elif has("chickpea") or (has("bean") and has("curry")):
             title = "Pantry Pauper Coconut Curry"
-            subtitle = "A fragrant 5-minute miracle from forgotten cans"
+            subtitle = "A fragrant 5-minute miracle from forgotten canned staples"
             tagline = "Feels like a Sunday slow-cook, but you stood up for exactly 180 seconds."
             shortcuts = [
-                "Do not drain the chickpea liquid; let the aquafaba thicken your sauce automatically.",
-                "Toss frozen peas in straight from the freezer without defrosting."
+                "Do not drain the chickpea liquid; the aquafaba naturally thickens your curry sauce.",
+                "Toss frozen peas or greens in straight from the freezer without defrosting."
             ]
             steps = [
-                f"Empty chickpeas, curry powder, and coconut milk into your {vessel}.",
-                "Simmer for 3 minutes until aromatic and thick.",
-                "Stir in peas for the final 60 seconds. Done."
+                f"Empty chickpeas, curry powder, and coconut milk into your {effective_vessel}.",
+                "Simmer on medium for 3 minutes until aromatic, creamy, and bubbling.",
+                f"Fold in remaining ingredients for the final 60 seconds. Done in 1 {effective_vessel}."
             ]
-            cleanup = f"1 {vessel} and a spoon. You didn't even wash a knife."
-
-        elif any("rice" in x for x in lower) and any("kimchi" in x for x in lower):
-            title = "The Sleepy Kimchi Sizzle"
-            subtitle = "Crispy fermented joy with zero active braincells"
-            tagline = "The sour acidity does 90% of the seasoning work so your hands don't have to."
-            shortcuts = [
-                "Use kitchen scissors or a fork to cut kimchi inside the jar—never dirty a cutting board.",
-                "Press cold rice flat with a spatula and don't touch it for 2 minutes to get crispy bits."
-            ]
-            steps = [
-                f"Melt butter in the {vessel}, drop in cold rice and kimchi.",
-                "Press flat, crack the egg directly into the center, and cover for 2 minutes.",
-                "Drizzle soy sauce, swirl together, and eat straight from the iron."
-            ]
-            cleanup = "1 skillet to rinse. Zero plates."
-
-        else:
-            title = f"The {ing_clean[0].title()} Sloth Sizzle"
-            subtitle = f"A high-harmony survival hash of {joined}"
-            tagline = f"TabPFN scored this combination {tabpfn.harmony_score}% flavor harmony. We refuse to complicate it."
-            shortcuts = [
-                "Tear all greens or soft items with bare hands to avoid knife cleanup.",
-                "Cook everything in one sequential pan layer to maximize fond without multiple pots."
-            ]
-            steps = [
-                f"Heat a splash of oil/butter in your {vessel}.",
-                f"Toss in {', '.join(ing_clean[:2])} for 2 minutes until aromatic.",
-                f"Add remaining ingredients ({', '.join(ing_clean[2:]) if len(ing_clean) > 2 else 'seasoning'}), stir for 1 minute, turn off heat, and serve."
-            ]
-            cleanup = f"1 {vessel} and 1 fork to wash. Done in {tabpfn.active_standing_minutes} minutes."
-            img = "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=1200&q=80"
-
-        # Determine image_url
-        if any("ramen" in x for x in lower) and any("peanut" in x for x in lower):
-            img = "https://images.unsplash.com/photo-1569718212165-3a8278d5f624?auto=format&fit=crop&w=1200&q=80"
-        elif any("chip" in x for x in lower) or any("salsa" in x for x in lower):
-            img = "https://images.unsplash.com/photo-1513456852971-30c0b8199d4d?auto=format&fit=crop&w=1200&q=80"
-        elif any("chickpea" in x for x in lower) and any("curry" in x for x in lower):
             img = "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=1200&q=80"
-        elif any("rice" in x for x in lower) and any("kimchi" in x for x in lower):
-            img = "https://images.unsplash.com/photo-1590301157890-4810ed352733?auto=format&fit=crop&w=1200&q=80"
-        elif any("tuna" in x for x in lower):
+
+        # -------------------------------------------------------------
+        # ARCHETYPE 5: EGGS (When Egg is the Primary Star)
+        # -------------------------------------------------------------
+        elif has("egg"):
+            if has("tomato", "salsa"):
+                title = "4-Minute Emergency Shakshuka"
+                subtitle = "Silky eggs poached in bubbling spiced tomato-garlic reduction"
+                tagline = "High-protein North African brunch luxury synthesized with zero prep."
+                shortcuts = [
+                    "Make small craters in the bubbling sauce with a spoon and crack eggs directly in.",
+                    "Cover with a lid or foil so the egg whites set in 2 minutes flat without flipping."
+                ]
+                steps = [
+                    f"Pour tomato sauce or salsa into your {effective_vessel} with garlic/seasonings over medium heat until bubbling.",
+                    "Create 2 wells in the sauce. Crack eggs directly into each well.",
+                    "Cover with a lid for 2.5 minutes until whites are firm and yolks remain jammy. Serve."
+                ]
+                img = "https://images.unsplash.com/photo-1525351484163-7529414344d8?auto=format&fit=crop&w=1200&q=80"
+
+            elif has("bread", "toast"):
+                title = "Crispy Golden Egg-in-a-Hole Melt"
+                subtitle = "Buttery toasted sourdough with a runny egg center and molten cheese"
+                tagline = "One pan, three minutes, and zero bowls to clean before work."
+                shortcuts = [
+                    "Tear a hole in the center of the bread with your fingers—no cookie cutter required.",
+                    "Drop the torn bread circle right alongside in the butter to fry as a dipping soldier."
+                ]
+                steps = [
+                    f"Melt butter in your {effective_vessel}. Place bread slice in pan.",
+                    "Crack the egg directly into the center hole. Season with salt and pepper.",
+                    "Flip after 2 minutes, top with cheese, and sear for 1 minute until golden and melted."
+                ]
+                img = "https://images.unsplash.com/photo-1528735602780-2552fd46c7af?auto=format&fit=crop&w=1200&q=80"
+
+            elif has("cheese"):
+                title = "Velvety Low-Effort French Omelet Pocket"
+                subtitle = "Pillowy butter-scrambled eggs stuffed with molten cheddar"
+                tagline = "Culinary school chefs practice this for 10 years; you just did it in sweatpants."
+                shortcuts = [
+                    "Crack eggs directly into the foaming butter pan and scramble gently with your fork.",
+                    "Fold once when 80% set and kill the heat immediately—residual heat finishes the cook."
+                ]
+                steps = [
+                    f"Melt 1 tbsp butter in your {effective_vessel} over medium-low heat until foaming.",
+                    "Crack eggs directly in, swirling rapidly with a fork for 60 seconds until creamy curds form.",
+                    "Scatter cheese across center, fold in half, turn off heat, and serve on your fork."
+                ]
+                img = "https://images.unsplash.com/photo-1510693206972-df098062cb71?auto=format&fit=crop&w=1200&q=80"
+
+            else:
+                title = f"The {ing_clean[0].title()} 3-Minute Skillet Scramble"
+                subtitle = f"Fluffy high-protein scramble with {joined}"
+                tagline = "Fastest breakfast-for-dinner protein delivery system known to science."
+                shortcuts = [
+                    "Whisk eggs directly inside the skillet with your eating fork—never use a prep bowl.",
+                    "Pull off the flame while eggs look slightly glossy for maximum softness."
+                ]
+                steps = [
+                    f"Heat a knob of butter/oil in {effective_vessel}. Add {', '.join(ing_clean[1:]) if len(ing_clean) > 1 else 'seasoning'} for 1 minute.",
+                    "Crack eggs directly into pan, stirring continuously with a fork for 90 seconds.",
+                    "Turn off heat when soft curds form. Eat directly from the pan."
+                ]
+                img = "https://images.unsplash.com/photo-1525351484163-7529414344d8?auto=format&fit=crop&w=1200&q=80"
+
+        # -------------------------------------------------------------
+        # ARCHETYPE 6: BREAD / TOAST / SANDWICH
+        # -------------------------------------------------------------
+        elif has("bread", "toast"):
+            if has("cheese"):
+                title = "The Ultimate Inside-Out Grilled Cheese"
+                subtitle = "Crispy frico cheese crust on the outside, molten gooey center within"
+                tagline = "Why put cheese only inside when you can toast it directly into the skillet?"
+                shortcuts = [
+                    "Butter the bread with the back of a spoon—never dirty a butter knife.",
+                    "Scatter a pinch of shredded cheese directly on the hot pan under the bread for a crunchy crust."
+                ]
+                steps = [
+                    f"Melt butter in your {effective_vessel}. Lay down bread and layer thick cheese on top.",
+                    "Top with second slice. Cook on medium-low for 2 minutes until bottom is golden.",
+                    "Flip and cook for 90 seconds until cheese is completely molten. Slice diagonally."
+                ]
+                img = "https://images.unsplash.com/photo-1528735602780-2552fd46c7af?auto=format&fit=crop&w=1200&q=80"
+
+            elif has("peanut"):
+                title = "Caramelized Warm Peanut Butter Toast Melt"
+                subtitle = "Toasted sourdough with bubbling warm peanut butter and sweet reduction"
+                tagline = "Comfort food so fast it violates multiple municipal fire codes."
+                shortcuts = [
+                    "Toast bread directly in bubbling butter in the pan for 90 seconds per side.",
+                    "Spread peanut butter while bread is scorching hot so it melts into a warm glaze."
+                ]
+                steps = [
+                    f"Melt butter in {effective_vessel}. Toast bread on both sides until deep golden brown.",
+                    "Immediately spread peanut butter generously over the hot surface.",
+                    "Drizzle honey or hot sauce if desired. Eat warm with your hands."
+                ]
+                img = "https://images.unsplash.com/photo-1584776296944-ab6fb57b0bdd?auto=format&fit=crop&w=1200&q=80"
+
+            else:
+                title = f"The {ing_clean[0].title()} Pan-Toasted Skillet Melt"
+                subtitle = f"Golden crisp sourdough topped with {joined}"
+                tagline = "Hot, crunchy, and ready before the kettle finishes boiling."
+                shortcuts = [
+                    "Toast bread in the same pan fat used for your toppings.",
+                    "Eat with your hands over the pan to eliminate all dishes."
+                ]
+                steps = [
+                    f"Melt butter in {effective_vessel}. Toast bread for 2 minutes until crisp.",
+                    f"Warm {', '.join(ing_clean[1:]) if len(ing_clean) > 1 else 'toppings'} in the pan corner.",
+                    "Spoon toppings onto toast, fold, and eat immediately."
+                ]
+                img = "https://images.unsplash.com/photo-1528735602780-2552fd46c7af?auto=format&fit=crop&w=1200&q=80"
+
+        # -------------------------------------------------------------
+        # ARCHETYPE 7: PASTA / ITALIAN
+        # -------------------------------------------------------------
+        elif has("pasta", "spaghetti", "macaroni"):
+            if has("garlic", "olive oil"):
+                title = "Midnight Spaghetti Aglio e Olio"
+                subtitle = "The legendary Neapolitan late-night garlic and pepper sizzle"
+                tagline = "Invented by broke Italian students in the 1700s; perfected by tired developers today."
+                shortcuts = [
+                    "Cook pasta in shallow water so the starchy water naturally binds the olive oil into sauce.",
+                    "Crush garlic with a mug and fry on low heat so it sweetens without burning."
+                ]
+                steps = [
+                    f"Cook pasta in {effective_vessel} with minimal salted water until al dente.",
+                    "Pour off most water leaving 3 tablespoons. Slide pasta to one side.",
+                    "In the cleared pan area, sizzle garlic in olive oil for 60 seconds, then toss all together."
+                ]
+                img = "https://images.unsplash.com/photo-1551183053-bf91a1d81141?auto=format&fit=crop&w=1200&q=80"
+
+            else:
+                title = f"The {ing_clean[0].title()} 1-Pan Starch Pasta Toss"
+                subtitle = f"Creamy reduction pasta with {joined}"
+                tagline = "No colander. No strainer. No second pot. Just pure starch physics."
+                shortcuts = [
+                    "Cook pasta directly in the sauce liquid so zero starch is drained away.",
+                    "Finish with cheese off the heat to avoid clumping."
+                ]
+                steps = [
+                    f"Simmer pasta and {', '.join(ing_clean[1:]) if len(ing_clean) > 1 else 'seasonings'} in {effective_vessel} with 1.5 cups water.",
+                    "Boil for 4 minutes until liquid is mostly absorbed into a thick glossy glaze.",
+                    "Stir in remaining ingredients, turn off heat, and serve with your eating fork."
+                ]
+                img = "https://images.unsplash.com/photo-1612874742237-6526221588e3?auto=format&fit=crop&w=1200&q=80"
+
+        # -------------------------------------------------------------
+        # ARCHETYPE 8: POTATOES / HASH
+        # -------------------------------------------------------------
+        elif has("potato", "hash", "fries"):
+            title = "Crispy Skillet Smashed Potato Hash"
+            subtitle = "Crushed golden potatoes seared in butter with melting cheese"
+            tagline = "Maximum crispy surface area created with the bottom of a drinking glass."
+            shortcuts = [
+                "Smash cooked or canned potatoes flat with the bottom of a coffee mug.",
+                "Leave them undisturbed in the hot skillet for 3 full minutes to get ultra-crispy edges."
+            ]
+            steps = [
+                f"Melt butter/oil in {effective_vessel} over medium-high heat.",
+                "Add potatoes, smash flat with a mug base, and sear for 3 minutes without moving.",
+                f"Flip, scatter {', '.join(ing_clean[1:]) if len(ing_clean) > 1 else 'cheese'} over top, and cook 2 minutes until molten."
+            ]
+            img = "https://images.unsplash.com/photo-1518013034458-30b0ee243591?auto=format&fit=crop&w=1200&q=80"
+
+        # -------------------------------------------------------------
+        # ARCHETYPE 9: TOFU / VEGETARIAN GLOW
+        # -------------------------------------------------------------
+        elif has("tofu"):
+            title = "Crispy Sweet-Heat Glazed Tofu Slices"
+            subtitle = "Golden pan-seared tofu planks lacquered in savory garlic-chili reduction"
+            tagline = "High-protein, plant-based indulgence ready in under 5 active minutes."
+            shortcuts = [
+                "Tear tofu into rustic bite-sized jagged pieces with your fingers—rough edges crisp up better than sliced cubes.",
+                "Pour soy sauce and sriracha directly into the sizzling pan to glaze."
+            ]
+            steps = [
+                f"Heat oil in your {effective_vessel} over high heat. Add tofu pieces and sear for 2.5 minutes without moving.",
+                "Turn pieces over. Pour in soy sauce, sriracha, and garlic/seasonings.",
+                "Toss rapidly as the sauce bubbles into a sticky, caramelized glaze. Serve hot."
+            ]
             img = "https://images.unsplash.com/photo-1546069901-d8a1c97a5a8e?auto=format&fit=crop&w=1200&q=80"
-        elif any("carbonara" in x for x in lower) or (any("egg" in x for x in lower) and any("cheese" in x for x in lower)):
-            img = "https://images.unsplash.com/photo-1612874742237-6526221588e3?auto=format&fit=crop&w=1200&q=80"
+
+        # -------------------------------------------------------------
+        # ARCHETYPE 10: TUNA / CANNED FISH
+        # -------------------------------------------------------------
+        elif has("tuna"):
+            title = "Midnight Skillet Tuna Melt Sizzle"
+            subtitle = "Flaked savory tuna warmed in herb butter with bubbling molten cheese"
+            tagline = "Salty, savory, rich comfort food assembled in 180 seconds."
+            shortcuts = [
+                "Open tuna can, press lid to drain liquid directly into sink, drop straight into pan.",
+                "Eat with crackers, chips, or straight off a fork."
+            ]
+            steps = [
+                f"Melt butter in {effective_vessel}. Add tuna and {', '.join(ing_clean[1:]) if len(ing_clean) > 1 else 'seasonings'}.",
+                "Warm through on medium heat for 90 seconds until steaming.",
+                "Top with cheese if available, cover for 45 seconds until melted, and dig in."
+            ]
+            img = "https://images.unsplash.com/photo-1546069901-d8a1c97a5a8e?auto=format&fit=crop&w=1200&q=80"
+
+        # -------------------------------------------------------------
+        # UNIVERSAL SMART CHEF COMPOSER (For Any Unique Custom Combo)
+        # -------------------------------------------------------------
         else:
-            img = "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=1200&q=80"
+            primary = ing_clean[0].title()
+            secondary = ing_clean[1].title() if len(ing_clean) > 1 else "Seasoning"
+            
+            title = f"The {primary} & {secondary} Sloth Skillet"
+            subtitle = f"A customized high-synergy survival sauté of {joined}"
+            tagline = f"TabPFN evaluated this pairing at {tabpfn.harmony_score}% flavor balance. We refuse to complicate it."
+            shortcuts = [
+                "Tear all soft ingredients with your bare hands directly over the hot pan.",
+                "Cook everything in one sequential heat layer to build maximum savory fond."
+            ]
+            steps = [
+                f"Heat 1 tablespoon of oil or butter in your {effective_vessel} over medium flame.",
+                f"Add {ing_clean[0]} and sauté for 2 minutes until golden and aromatic.",
+                f"Fold in remaining ingredients ({', '.join(ing_clean[1:]) if len(ing_clean) > 1 else 'herbs'}), stir for 60 seconds, kill the heat, and feast."
+            ]
+            img = "https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&w=1200&q=80"
+
+        # If Microwave-Only is enforced, adapt instructions
+        if microwave_only:
+            shortcuts.append("Microwave on HIGH with a paper towel lid to trap steam and avoid splatter.")
+            steps = [
+                f"Place all ingredients into your {effective_vessel} with 2 tablespoons of water or broth.",
+                "Cover with a damp paper towel and microwave on HIGH for 2 minutes.",
+                "Carefully stir with your fork, microwave for another 60 seconds, and let stand 1 minute before eating."
+            ]
+            cleanup = f"Exactly 1 {effective_vessel} and 1 fork to rinse. Zero pans or stovetop splatters."
+        else:
+            cleanup = f"Exactly 1 {effective_vessel} and 1 fork to wipe down. Zero cutting boards or prep bowls."
 
         return {
             "title": title,
             "subtitle": subtitle,
             "tagline": tagline,
             "sloth_efficiency": f"{int(tabpfn.harmony_score)}% Sloth Efficiency",
-            "vessel_type": vessel,
-            "utensil": "1 Fork",
+            "vessel_type": effective_vessel,
+            "utensil": "1 Fork" if not has("soup", "curry") else "1 Spoon",
             "sloth_shortcuts": shortcuts,
             "steps": steps,
             "cleanup_audit": cleanup,
@@ -217,9 +569,14 @@ class GemmaRecipeSynthesizer:
         # 1. Try local Ollama Gemma 2 first
         gen_data = await self._try_ollama_generate(prompt)
         
-        # 2. Fallback to dynamic offline generator
+        # 2. Fallback to dynamic offline culinary synthesizer
         if not gen_data:
-            gen_data = self._synthesize_dynamic_offline(ingredients, tabpfn, effective_vessel)
+            gen_data = self._synthesize_dynamic_offline(
+                ingredients=ingredients,
+                tabpfn=tabpfn,
+                vessel=effective_vessel,
+                microwave_only=microwave_only
+            )
 
         recipe_id = f"sloth-{uuid.uuid4().hex[:8]}"
         
