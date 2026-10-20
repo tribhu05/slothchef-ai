@@ -65,3 +65,27 @@ export const playStepCheckSound = () => {
     console.debug('Audio click failed', e);
   }
 };
+
+// Browser Native Hands-Free Speech Synthesis for Cook-Along Mode
+export const speakStep = (text: string, onEnd?: () => void) => {
+  if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
+  try {
+    window.speechSynthesis.cancel(); // Stop any active utterance
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.rate = 0.95; // Slightly relaxed, lazy sloth pace
+    utterance.pitch = 1.0;
+    if (onEnd) {
+      utterance.onend = onEnd;
+      utterance.onerror = onEnd;
+    }
+    window.speechSynthesis.speak(utterance);
+  } catch (e) {
+    console.debug('SpeechSynthesis failed', e);
+  }
+};
+
+export const stopSpeaking = () => {
+  if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+    window.speechSynthesis.cancel();
+  }
+};

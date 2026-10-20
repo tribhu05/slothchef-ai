@@ -15,7 +15,8 @@ import {
   Filter, 
   Trash2,
   ShieldCheck,
-  ChevronRight
+  ChevronRight,
+  Dices
 } from 'lucide-react';
 
 interface KitchenStudioProps {
@@ -101,6 +102,15 @@ export const KitchenStudio: React.FC<KitchenStudioProps> = ({
     return keywords.some((kw) => item.toLowerCase().includes(kw));
   });
 
+  const handleRandomize = () => {
+    if (catalog.length === 0) return;
+    onClearIngredients();
+    const shuffled = [...catalog].sort(() => 0.5 - Math.random());
+    const randomItems = shuffled.slice(0, 3);
+    randomItems.forEach((it) => onAddIngredient(it));
+    setActiveTab('scavenger');
+  };
+
   return (
     <div className="bg-[#181818] rounded-3xl border border-white/[0.08] shadow-2xl p-5 sm:p-6 flex flex-col gap-6">
       {/* Studio Header & Segmented Mode Switcher */}
@@ -117,6 +127,16 @@ export const KitchenStudio: React.FC<KitchenStudioProps> = ({
               Choose a disaster preset or build your meal from random fridge leftovers.
             </p>
           </div>
+
+          <button
+            type="button"
+            onClick={handleRandomize}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#202020] hover:bg-[#292929] text-[#F4D779] border border-white/[0.08] text-xs font-semibold cursor-pointer transition-colors shadow-xs"
+            title="Randomly pick 3 ingredients from catalog"
+          >
+            <Dices className="w-3.5 h-3.5" />
+            <span>Randomize 🎲</span>
+          </button>
         </div>
 
         {/* Mode Switcher Tabs */}

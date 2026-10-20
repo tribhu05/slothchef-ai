@@ -42,3 +42,37 @@
 ::-webkit-scrollbar-thumb:hover {
   background: #4a4a4a;
 }
+
+/* Pristine Print Styles for Kitchen Fridge Cards */
+@media print {
+  body {
+    background: #ffffff !important;
+    color: #111111 !important;
+  }
+  
+  header, footer, .no-print, button, input {
+    display: none !important;
+  }
+  
+  .lg\:col-span-5 {
+    display: none !important;
+  }
+
+  .lg\:col-span-7 {
+    width: 100% !important;
+  }
+
+  .bg-\[\#181818\], .bg-\[\#202020\], .bg-\[\#242424\], .bg-\[\#292929\] {
+    background: #ffffff !important;
+    color: #111111 !important;
+    border-color: #dddddd !important;
+  }
+
+  .text-\[\#F5F2EB\], .text-\[\#F4D779\] {
+    color: #111111 !important;
+  }
+
+  .text-\[\#A5A39D\] {
+    color: #444444 !important;
+  }
+}

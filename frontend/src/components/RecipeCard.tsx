@@ -18,10 +18,13 @@ import {
   ArrowLeft,
   CheckCircle2,
   Check,
-  BellRing
+  BellRing,
+  Printer,
+  Volume2,
+  VolumeX
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
-import { playTimerDoneChime, playStepCheckSound } from '../utils/audio';
+import { playTimerDoneChime, playStepCheckSound, speakStep, stopSpeaking } from '../utils/audio';
 
 interface RecipeCardProps {
   recipe: SlothRecipe;
@@ -42,6 +45,7 @@ export const RecipeCard: React.FC<RecipeCardProps> = ({
   // Interactive Step Checklist
   const [completedSteps, setCompletedSteps] = useState<number[]>([]);
   const [currentCookStep, setCurrentCookStep] = useState(0);
+  const [isSpeaking, setIsSpeaking] = useState(false);
 
   // Interactive Timer
   const [timerSeconds, setTimerSeconds] = useState(recipe.active_standing_minutes * 60 || 180);
@@ -215,6 +219,16 @@ export const RecipeCard: React.FC<RecipeCardProps> = ({
                 <span>Copy</span>
               </>
             )}
+          </button>
+
+          {/* Print Recipe Button */}
+          <button
+            onClick={() => window.print()}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#181818] hover:bg-[#292929] text-[#F5F2EB] border border-white/[0.08] text-xs font-medium transition-all cursor-pointer no-print"
+            title="Print or Save as PDF"
+          >
+            <Printer className="w-3.5 h-3.5 text-[#F4D779]" />
+            <span className="hidden sm:inline">Print</span>
           </button>
         </div>
       </div>
@@ -528,9 +542,44 @@ export const RecipeCard: React.FC<RecipeCardProps> = ({
                   Cook-Along Focus Mode
                 </span>
               </div>
-              <span className="font-mono text-xs text-[#F4D779] bg-[#F4D779]/10 px-3 py-1 rounded-full border border-[#F4D779]/20">
-                Step {currentCookStep + 1} of {recipe.steps.length}
-              </span>
+              
+              <div className="flex items-center gap-2">
+                {/* Voice Read Aloud Button */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (isSpeaking) {
+                      stopSpeaking();
+                      setIsSpeaking(false);
+                    } else {
+                      setIsSpeaking(true);
+                      speakStep(recipe.steps[currentCookStep], () => setIsSpeaking(false));
+                    }
+                  }}
+                  className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border transition-all cursor-pointer ${
+                    isSpeaking
+                      ? 'bg-[#F4D779] text-[#181818] border-[#F4D779] font-bold shadow-sm'
+                      : 'bg-[#202020] hover:bg-[#292929] text-[#F4D779] border-white/[0.08]'
+                  }`}
+                  title="Hands-free cooking: listen to instruction"
+                >
+                  {isSpeaking ? (
+                    <>
+                      <VolumeX className="w-3.5 h-3.5 animate-pulse" />
+                      <span>Stop Voice</span>
+                    </>
+                  ) : (
+                    <>
+                      <Volume2 className="w-3.5 h-3.5" />
+                      <span>Read Aloud 🔊</span>
+                    </>
+                  )}
+                </button>
+
+                <span className="font-mono text-xs text-[#F4D779] bg-[#F4D779]/10 px-3 py-1 rounded-full border border-[#F4D779]/20">
+                  Step {currentCookStep + 1} of {recipe.steps.length}
+                </span>
+              </div>
             </div>
 
             {/* Big readable step card */}
@@ -555,7 +604,11 @@ export const RecipeCard: React.FC<RecipeCardProps> = ({
           {/* Navigation Controls */}
           <div className="flex items-center justify-between gap-4 pt-6 border-t border-white/[0.06]">
             <button
-              onClick={() => setCurrentCookStep((prev) => Math.max(0, prev - 1))}
+              onClick={() => {
+                stopSpeaking();
+                setIsSpeaking(false);
+                setCurrentCookStep((prev) => Math.max(0, prev - 1));
+              }}
               disabled={currentCookStep === 0}
               className={`flex items-center gap-2 px-5 py-3 rounded-2xl text-xs font-bold transition-all cursor-pointer ${
                 currentCookStep === 0
@@ -570,6 +623,8 @@ export const RecipeCard: React.FC<RecipeCardProps> = ({
             {currentCookStep < recipe.steps.length - 1 ? (
               <button
                 onClick={() => {
+                  stopSpeaking();
+                  setIsSpeaking(false);
                   toggleStep(currentCookStep);
                   setCurrentCookStep((prev) => prev + 1);
                 }}
@@ -581,6 +636,8 @@ export const RecipeCard: React.FC<RecipeCardProps> = ({
             ) : (
               <button
                 onClick={() => {
+                  stopSpeaking();
+                  setIsSpeaking(false);
                   toggleStep(currentCookStep);
                   setViewMode('overview');
                   confetti({
