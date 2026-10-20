@@ -1,23 +1,62 @@
 import React, { useState, useEffect } from 'react';
-import { SlothRecipe } from '../types';
-import { Clock, Utensils, CheckCircle, Copy, Timer, Shield, Sparkles, RefreshCw, ChefHat, Award } from 'lucide-react';
+import { SlothRecipe, TabPFNPrediction } from '../types';
+import { 
+  Clock, 
+  Utensils, 
+  CheckCircle, 
+  Copy, 
+  Timer, 
+  Shield, 
+  Sparkles, 
+  RefreshCw, 
+  Award, 
+  ChevronDown, 
+  ChevronUp, 
+  Zap, 
+  ChefHat, 
+  ArrowRight, 
+  ArrowLeft,
+  CheckCircle2,
+  Check
+} from 'lucide-react';
+import confetti from 'canvas-confetti';
 
 interface RecipeCardProps {
   recipe: SlothRecipe;
   onRegenerate: () => void;
   isLoading: boolean;
+  onOpenExplainer?: () => void;
 }
 
-export const RecipeCard: React.FC<RecipeCardProps> = ({ recipe, onRegenerate, isLoading }) => {
+export const RecipeCard: React.FC<RecipeCardProps> = ({ 
+  recipe, 
+  onRegenerate, 
+  isLoading,
+  onOpenExplainer 
+}) => {
   const [copied, setCopied] = useState(false);
-  const [timerSeconds, setTimerSeconds] = useState(recipe.total_minutes * 60);
+  const [viewMode, setViewMode] = useState<'overview' | 'cook_along'>('overview');
+  
+  // Interactive Step Checklist
+  const [completedSteps, setCompletedSteps] = useState<number[]>([]);
+  const [currentCookStep, setCurrentCookStep] = useState(0);
+
+  // Interactive Timer
+  const [timerSeconds, setTimerSeconds] = useState(recipe.active_standing_minutes * 60 || 180);
   const [timerActive, setTimerActive] = useState(false);
 
-  useEffect(() => {
-    setTimerSeconds(recipe.total_minutes * 60);
-    setTimerActive(false);
-  }, [recipe]);
+  // Collapsible TabPFN Telemetry Drawer
+  const [isTelemetryExpanded, setIsTelemetryExpanded] = useState(false);
 
+  // Reset states on new recipe
+  useEffect(() => {
+    setCompletedSteps([]);
+    setCurrentCookStep(0);
+    setTimerSeconds(recipe.active_standing_minutes * 60 || 180);
+    setTimerActive(false);
+  }, [recipe.id]);
+
+  // Timer countdown
   useEffect(() => {
     let interval: any = null;
     if (timerActive && timerSeconds > 0) {
@@ -30,11 +69,30 @@ export const RecipeCard: React.FC<RecipeCardProps> = ({ recipe, onRegenerate, is
     return () => clearInterval(interval);
   }, [timerActive, timerSeconds]);
 
+  const toggleStep = (index: number) => {
+    if (completedSteps.includes(index)) {
+      setCompletedSteps(completedSteps.filter((i) => i !== index));
+    } else {
+      const nextCompleted = [...completedSteps, index];
+      setCompletedSteps(nextCompleted);
+      
+      // If all steps completed, celebrate!
+      if (nextCompleted.length === recipe.steps.length) {
+        confetti({
+          particleCount: 80,
+          spread: 70,
+          origin: { y: 0.7 },
+          colors: ['#F4D779', '#10b981', '#ffffff']
+        });
+      }
+    }
+  };
+
   const handleCopy = () => {
     const text = `🍳 ${recipe.title} (${recipe.sloth_efficiency})\n\n` +
       `Vessel: ${recipe.vessel_type} | Utensil: ${recipe.utensil}\n` +
-      `Active Time: ${recipe.active_standing_minutes}m | Total Time: ${recipe.total_minutes}m\n\n` +
-      `SLOTH SHORTCUTS:\n${recipe.sloth_shortcuts.map(s => `- ${s}`).join('\n')}\n\n` +
+      `Active Standing Time: ${recipe.active_standing_minutes}m | Total Time: ${recipe.total_minutes}m\n\n` +
+      `RADICAL SLOTH SHORTCUTS:\n${recipe.sloth_shortcuts.map(s => `- ${s}`).join('\n')}\n\n` +
       `STEPS:\n${recipe.steps.map((st, i) => `${i + 1}. ${st}`).join('\n')}\n\n` +
       `CLEANUP AUDIT:\n${recipe.cleanup_audit}`;
     
@@ -50,172 +108,436 @@ export const RecipeCard: React.FC<RecipeCardProps> = ({ recipe, onRegenerate, is
   };
 
   const heroImage = recipe.image_url || "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=1200&q=80";
+  const progressPercent = Math.round((completedSteps.length / recipe.steps.length) * 100);
+  const tabpfn = recipe.tabpfn_evidence;
 
   return (
-    <div className="bg-[#181818] rounded-3xl overflow-hidden border border-white/[0.08] shadow-2xl mb-8">
-      {/* Cinematic Hero Food Photography Header */}
-      <div className="relative h-64 sm:h-80 w-full overflow-hidden bg-[#202020]">
-        <img
-          src={heroImage}
-          alt={recipe.title}
-          className="w-full h-full object-cover filter brightness-[0.88]"
-          onError={(e) => {
-            e.currentTarget.src = "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=1200&q=80";
-          }}
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#181818] via-[#181818]/60 to-transparent" />
-
-        {/* Floating Badges */}
-        <div className="absolute top-4 left-4 right-4 flex items-center justify-between gap-2">
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-bold px-3 py-1 rounded-full bg-[#181818]/85 backdrop-blur-md border border-[#F4D779]/40 text-[#F4D779] shadow-sm">
-              {recipe.sloth_score ? `Sloth Score: ${recipe.sloth_score}/100` : recipe.sloth_efficiency}
-            </span>
-            <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-[#181818]/85 backdrop-blur-md border border-white/[0.1] text-[#F5F2EB]">
-              {recipe.vessel_type}
-            </span>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <button
-              onClick={handleCopy}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#181818]/85 backdrop-blur-md hover:bg-[#202020] text-[#F5F2EB] border border-white/[0.1] text-xs font-medium transition-all cursor-pointer shadow-xs"
-              title="Copy recipe text"
-            >
-              {copied ? (
-                <>
-                  <CheckCircle className="w-3.5 h-3.5 text-emerald-400" />
-                  <span>Copied</span>
-                </>
-              ) : (
-                <>
-                  <Copy className="w-3.5 h-3.5 text-[#F4D779]" />
-                  <span>Copy</span>
-                </>
-              )}
-            </button>
-          </div>
+    <div className="bg-[#181818] rounded-3xl overflow-hidden border border-white/[0.08] shadow-2xl mb-8 flex flex-col">
+      {/* Top Interactive Mode Navigation & Action Bar */}
+      <div className="p-3 sm:p-4 bg-[#202020] border-b border-white/[0.06] flex flex-wrap items-center justify-between gap-3">
+        {/* View Switcher: Overview vs Cook-Along Mode */}
+        <div className="flex items-center gap-1.5 p-1 bg-[#181818] rounded-2xl border border-white/[0.08]">
+          <button
+            type="button"
+            onClick={() => setViewMode('overview')}
+            className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer ${
+              viewMode === 'overview'
+                ? 'bg-[#F4D779] text-[#181818] shadow-sm font-bold'
+                : 'text-[#A5A39D] hover:text-[#F5F2EB]'
+            }`}
+          >
+            <span>📖 Recipe Overview</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setViewMode('cook_along')}
+            className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer ${
+              viewMode === 'cook_along'
+                ? 'bg-[#F4D779] text-[#181818] shadow-sm font-bold'
+                : 'text-[#A5A39D] hover:text-[#F5F2EB]'
+            }`}
+          >
+            <ChefHat className="w-3.5 h-3.5" />
+            <span>👨‍🍳 Cook-Along Mode</span>
+          </button>
         </div>
 
-        {/* Title over Hero Gradient */}
-        <div className="absolute bottom-4 left-6 right-6">
-          <h2 className="font-display font-extrabold text-2xl sm:text-4xl text-[#F5F2EB] tracking-tight mb-1">
-            {recipe.title}
-          </h2>
-          <p className="text-xs sm:text-sm font-medium text-[#F4D779]">
-            {recipe.subtitle}
-          </p>
-        </div>
-      </div>
-
-      {/* Main Content Body */}
-      <div className="p-6 sm:p-8">
-        {/* Witty Quote Tagline */}
-        <div className="p-4 bg-[#202020] rounded-2xl border border-white/[0.06] text-xs text-[#A5A39D] mb-6 flex items-start gap-3">
-          <span className="text-xl">🦥</span>
-          <p className="leading-relaxed italic text-[#F5F2EB]/90">
-            "{recipe.tagline}"
-          </p>
-        </div>
-
-        {/* Quick Stats Bar & Timer */}
-        <div className="flex flex-wrap items-center justify-between gap-3 p-3.5 rounded-2xl bg-[#202020] border border-white/[0.06] mb-6 text-xs text-[#A5A39D]">
-          <div className="flex items-center gap-4">
-            <span className="flex items-center gap-1.5">
-              <Clock className="w-3.5 h-3.5 text-[#F4D779]" />
-              <strong className="text-[#F5F2EB]">{recipe.active_standing_minutes}m</strong> standing
-            </span>
-            <span className="flex items-center gap-1.5">
-              <Utensils className="w-3.5 h-3.5 text-emerald-400" />
-              <strong className="text-[#F5F2EB]">1</strong> utensil ({recipe.utensil})
-            </span>
-          </div>
-
-          {/* Interactive Cooking Timer */}
-          <div className="flex items-center gap-2 bg-[#292929] px-3 py-1.5 rounded-xl border border-white/[0.07]">
+        {/* Quick Actions (Timer & Copy) */}
+        <div className="flex items-center gap-2">
+          {/* Active Timer Pill */}
+          <div className="flex items-center gap-2 bg-[#181818] px-3 py-1.5 rounded-xl border border-white/[0.08] text-xs">
             <Timer className="w-3.5 h-3.5 text-[#F4D779]" />
-            <span className="font-mono font-bold text-[#F5F2EB]">{formatTimer(timerSeconds)}</span>
+            <span className="font-mono font-bold text-[#F5F2EB]">
+              {formatTimer(timerSeconds)}
+            </span>
             <button
               onClick={() => setTimerActive(!timerActive)}
               className="text-[#F4D779] hover:text-[#E8CA6B] font-semibold text-[11px] underline cursor-pointer ml-1"
             >
-              {timerActive ? 'Pause' : timerSeconds === 0 ? 'Reset' : 'Start Timer'}
+              {timerActive ? 'Pause' : timerSeconds === 0 ? 'Reset' : 'Start'}
             </button>
           </div>
-        </div>
 
-        {/* Sloth Shortcuts Section */}
-        <div className="mb-6">
-          <h3 className="font-display font-semibold text-xs uppercase tracking-wider text-[#A5A39D] mb-3 flex items-center gap-2">
-            <Award className="w-4 h-4 text-[#F4D779]" />
-            <span>Radical Sloth Shortcuts</span>
-          </h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {recipe.sloth_shortcuts.map((sc, i) => (
-              <div
-                key={i}
-                className="p-3.5 rounded-2xl bg-[#202020] border border-white/[0.06] text-xs text-[#F5F2EB] flex items-start gap-3"
-              >
-                <span className="w-5 h-5 rounded-full bg-[#F4D779]/15 text-[#F4D779] border border-[#F4D779]/30 font-bold flex items-center justify-center shrink-0 text-[10px]">
-                  {i + 1}
-                </span>
-                <span className="leading-relaxed">{sc}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Sequential Steps Timeline */}
-        <div className="mb-6">
-          <h3 className="font-display font-semibold text-xs uppercase tracking-wider text-[#A5A39D] mb-3 flex items-center gap-2">
-            <Utensils className="w-4 h-4 text-[#F4D779]" />
-            <span>Step-by-Step Execution</span>
-          </h3>
-          <ol className="space-y-3">
-            {recipe.steps.map((step, idx) => (
-              <li
-                key={idx}
-                className="p-4 rounded-2xl bg-[#202020] border border-white/[0.06] text-xs text-[#F5F2EB] flex items-start gap-3.5 hover:border-white/[0.1] transition-colors"
-              >
-                <span className="w-6 h-6 rounded-xl bg-[#292929] border border-white/[0.08] text-[#F4D779] font-bold flex items-center justify-center shrink-0 text-xs font-mono">
-                  {idx + 1}
-                </span>
-                <span className="leading-relaxed pt-0.5">{step}</span>
-              </li>
-            ))}
-          </ol>
-        </div>
-
-        {/* Cleanup Audit */}
-        <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 mb-6 flex items-start gap-3 text-xs">
-          <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-          <div>
-            <span className="font-bold uppercase tracking-wider text-emerald-300 block mb-0.5">
-              Cleanup Audit:
-            </span>
-            <p className="leading-relaxed text-emerald-200/90">
-              {recipe.cleanup_audit}
-            </p>
-          </div>
-        </div>
-
-        {/* Footer Actions & Open-Source Defense */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-white/[0.07]">
-          <div className="flex items-center gap-2 text-[11px] text-[#A5A39D]">
-            <Shield className="w-3.5 h-3.5 text-[#F4D779]" />
-            <span>On-device processing protects your private pantry habits</span>
-          </div>
-
+          {/* Copy Button */}
           <button
-            onClick={onRegenerate}
-            disabled={isLoading}
-            className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#202020] hover:bg-[#292929] text-[#F5F2EB] border border-white/[0.08] text-xs font-semibold transition-all cursor-pointer"
+            onClick={handleCopy}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#181818] hover:bg-[#292929] text-[#F5F2EB] border border-white/[0.08] text-xs font-medium transition-all cursor-pointer"
+            title="Copy Recipe"
           >
-            <RefreshCw className={`w-3.5 h-3.5 text-[#F4D779] ${isLoading ? 'animate-spin' : ''}`} />
-            <span>Regenerate Recipe</span>
+            {copied ? (
+              <>
+                <Check className="w-3.5 h-3.5 text-emerald-400" />
+                <span className="text-emerald-400">Copied</span>
+              </>
+            ) : (
+              <>
+                <Copy className="w-3.5 h-3.5 text-[#F4D779]" />
+                <span>Copy</span>
+              </>
+            )}
           </button>
         </div>
       </div>
+
+      {/* VIEW 1: RECIPE OVERVIEW */}
+      {viewMode === 'overview' && (
+        <div>
+          {/* Cinematic Hero Food Photography */}
+          <div className="relative h-64 sm:h-72 w-full overflow-hidden bg-[#202020]">
+            <img
+              src={heroImage}
+              alt={recipe.title}
+              className="w-full h-full object-cover filter brightness-[0.88]"
+              onError={(e) => {
+                e.currentTarget.src = "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=1200&q=80";
+              }}
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#181818] via-[#181818]/60 to-transparent" />
+
+            {/* Floating Top Badges */}
+            <div className="absolute top-4 left-4 right-4 flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-bold px-3 py-1 rounded-full bg-[#181818]/90 backdrop-blur-md border border-[#F4D779]/40 text-[#F4D779] shadow-md">
+                  Sloth Score: {recipe.sloth_score || 96}/100
+                </span>
+                <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-[#181818]/90 backdrop-blur-md border border-white/[0.1] text-[#F5F2EB]">
+                  {recipe.vessel_type}
+                </span>
+              </div>
+
+              <span className="text-xs font-mono font-medium px-2.5 py-1 rounded-full bg-emerald-500/20 backdrop-blur-md border border-emerald-500/30 text-emerald-300">
+                1-Pan Bound Guaranteed
+              </span>
+            </div>
+
+            {/* Title & Tagline overlay */}
+            <div className="absolute bottom-4 left-6 right-6">
+              <h1 className="font-display font-extrabold text-2xl sm:text-4xl text-[#F5F2EB] tracking-tight mb-1">
+                {recipe.title}
+              </h1>
+              <p className="text-xs sm:text-sm font-medium text-[#F4D779]">
+                {recipe.subtitle}
+              </p>
+            </div>
+          </div>
+
+          <div className="p-6 sm:p-8 space-y-6">
+            {/* Witty Quote Tagline */}
+            <div className="p-4 bg-[#202020] rounded-2xl border border-white/[0.06] text-xs text-[#A5A39D] flex items-start gap-3">
+              <span className="text-2xl">🦥</span>
+              <p className="leading-relaxed italic text-[#F5F2EB]/95 pt-0.5">
+                "{recipe.tagline}"
+              </p>
+            </div>
+
+            {/* Integrated Collapsible TabPFN Telemetry Bar */}
+            <div className="bg-[#202020] rounded-2xl border border-white/[0.07] overflow-hidden">
+              <div 
+                onClick={() => setIsTelemetryExpanded(!isTelemetryExpanded)}
+                className="p-4 flex items-center justify-between cursor-pointer hover:bg-white/[0.02] transition-colors select-none"
+              >
+                <div className="flex items-center gap-2.5">
+                  <Zap className="w-4 h-4 text-[#F4D779]" />
+                  <span className="font-display font-bold text-xs uppercase tracking-wider text-[#F5F2EB]">
+                    Prior Labs TabPFN-3.5 Flavor Harmony Telemetry
+                  </span>
+                  <span className="text-[11px] font-mono font-bold text-[#F4D779] bg-[#F4D779]/10 px-2 py-0.5 rounded-full border border-[#F4D779]/20">
+                    {tabpfn.harmony_score}% Match
+                  </span>
+                </div>
+
+                <div className="flex items-center gap-2 text-xs text-[#A5A39D]">
+                  <span className="hidden sm:inline">
+                    {isTelemetryExpanded ? 'Collapse Chemistry' : 'Expand Flavor Radar'}
+                  </span>
+                  {isTelemetryExpanded ? (
+                    <ChevronUp className="w-4 h-4 text-[#F4D779]" />
+                  ) : (
+                    <ChevronDown className="w-4 h-4 text-[#F4D779]" />
+                  )}
+                </div>
+              </div>
+
+              {/* Collapsed Metric Pills */}
+              <div className="px-4 pb-3 grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1 border-t border-white/[0.04]">
+                <div className="text-center p-2 rounded-xl bg-[#292929]">
+                  <span className="text-[10px] text-[#A5A39D] block">Sloth Score</span>
+                  <span className="font-display font-extrabold text-sm text-[#F4D779]">
+                    {recipe.sloth_score || 96}/100
+                  </span>
+                </div>
+                <div className="text-center p-2 rounded-xl bg-[#292929]">
+                  <span className="text-[10px] text-[#A5A39D] block">Active Standing</span>
+                  <span className="font-display font-extrabold text-sm text-[#F5F2EB]">
+                    {recipe.active_standing_minutes} mins
+                  </span>
+                </div>
+                <div className="text-center p-2 rounded-xl bg-[#292929]">
+                  <span className="text-[10px] text-[#A5A39D] block">Dish Wash Cap</span>
+                  <span className="font-display font-extrabold text-sm text-emerald-400">
+                    1 Pan Only
+                  </span>
+                </div>
+                <div className="text-center p-2 rounded-xl bg-[#292929]">
+                  <span className="text-[10px] text-[#A5A39D] block">Bayesian Conf</span>
+                  <span className="font-display font-extrabold text-sm text-[#F5F2EB]">
+                    {Math.round(tabpfn.confidence * 100)}%
+                  </span>
+                </div>
+              </div>
+
+              {/* Expanded Flavor Radar Details */}
+              {isTelemetryExpanded && (
+                <div className="p-4 border-t border-white/[0.06] bg-[#1a1a1a] space-y-4 animate-in fade-in duration-200">
+                  <div>
+                    <span className="text-[11px] font-semibold text-[#A5A39D] uppercase tracking-wider block mb-2">
+                      Chemical Flavor Synergy Radar
+                    </span>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                      {Object.entries(tabpfn.flavor_balance).map(([key, val]) => (
+                        <div key={key} className="bg-[#242424] p-2.5 rounded-xl border border-white/[0.05]">
+                          <div className="flex justify-between text-xs mb-1">
+                            <span className="capitalize text-[#A5A39D]">{key}</span>
+                            <span className="font-mono text-[#F4D779] font-bold">{val}%</span>
+                          </div>
+                          <div className="w-full bg-[#181818] rounded-full h-1">
+                            <div
+                              className="bg-[#F4D779] h-1 rounded-full"
+                              style={{ width: `${val}%` }}
+                            />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {tabpfn.pairing_synergies && tabpfn.pairing_synergies.length > 0 && (
+                    <div>
+                      <span className="text-[11px] font-semibold text-[#A5A39D] uppercase tracking-wider block mb-1.5">
+                        Tabular Foundation Model Synergies
+                      </span>
+                      <div className="space-y-1">
+                        {tabpfn.pairing_synergies.map((syn, idx) => (
+                          <div key={idx} className="text-xs text-[#F5F2EB] flex items-center gap-2">
+                            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                            <span>{syn}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Radical Sloth Shortcuts */}
+            <div>
+              <h3 className="font-display font-semibold text-xs uppercase tracking-wider text-[#A5A39D] mb-3 flex items-center gap-2">
+                <Award className="w-4 h-4 text-[#F4D779]" />
+                <span>Radical Sloth Shortcuts (No Prep Allowed)</span>
+              </h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {recipe.sloth_shortcuts.map((sc, i) => (
+                  <div
+                    key={i}
+                    className="p-3.5 rounded-2xl bg-[#202020] border border-white/[0.06] text-xs text-[#F5F2EB] flex items-start gap-3"
+                  >
+                    <span className="w-5 h-5 rounded-full bg-[#F4D779]/15 text-[#F4D779] border border-[#F4D779]/30 font-bold flex items-center justify-center shrink-0 text-[10px]">
+                      {i + 1}
+                    </span>
+                    <span className="leading-relaxed">{sc}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Interactive Step-by-Step Checklist */}
+            <div>
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="font-display font-semibold text-xs uppercase tracking-wider text-[#A5A39D] flex items-center gap-2">
+                  <Utensils className="w-4 h-4 text-[#F4D779]" />
+                  <span>Interactive Cooking Checklist (Tap Steps as You Cook)</span>
+                </h3>
+                <span className="text-[11px] font-mono font-medium text-[#F4D779]">
+                  {completedSteps.length} of {recipe.steps.length} done ({progressPercent}%)
+                </span>
+              </div>
+
+              {/* Progress Bar */}
+              <div className="w-full bg-[#202020] rounded-full h-1.5 mb-3.5 overflow-hidden">
+                <div
+                  className="bg-[#F4D779] h-1.5 rounded-full transition-all duration-300"
+                  style={{ width: `${progressPercent}%` }}
+                />
+              </div>
+
+              {/* Interactive Step List */}
+              <div className="space-y-2.5">
+                {recipe.steps.map((step, idx) => {
+                  const isDone = completedSteps.includes(idx);
+                  return (
+                    <div
+                      key={idx}
+                      onClick={() => toggleStep(idx)}
+                      className={`p-4 rounded-2xl border transition-all cursor-pointer flex items-start gap-3.5 select-none ${
+                        isDone
+                          ? 'bg-[#181818] border-emerald-500/30 text-[#A5A39D]'
+                          : 'bg-[#202020] border-white/[0.06] hover:border-white/[0.12] text-[#F5F2EB]'
+                      }`}
+                    >
+                      {/* Checkbox button */}
+                      <button
+                        type="button"
+                        className={`w-6 h-6 rounded-xl flex items-center justify-center shrink-0 transition-colors border ${
+                          isDone
+                            ? 'bg-emerald-500 text-[#181818] border-emerald-500'
+                            : 'bg-[#292929] border-white/[0.1] text-[#A5A39D]'
+                        }`}
+                      >
+                        {isDone ? (
+                          <Check className="w-3.5 h-3.5 stroke-[3]" />
+                        ) : (
+                          <span className="text-xs font-mono font-bold">{idx + 1}</span>
+                        )}
+                      </button>
+
+                      <span className={`text-xs leading-relaxed pt-0.5 ${isDone ? 'line-through text-[#A5A39D]/70' : ''}`}>
+                        {step}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {completedSteps.length === recipe.steps.length && (
+                <div className="mt-4 p-4 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-xs font-semibold flex items-center justify-between gap-3 animate-in fade-in zoom-in duration-200">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xl">🎉</span>
+                    <span>Meal complete! You successfully survived cooking with only 1 pan.</span>
+                  </div>
+                  <button
+                    onClick={() => setCompletedSteps([])}
+                    className="text-[11px] underline text-emerald-200 hover:text-white cursor-pointer"
+                  >
+                    Reset checklist
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* Cleanup Audit Alert */}
+            <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-start gap-3 text-xs">
+              <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+              <div>
+                <span className="font-bold uppercase tracking-wider text-emerald-300 block mb-0.5">
+                  1-Pan Dish & Cleanup Audit:
+                </span>
+                <p className="leading-relaxed text-emerald-200/90">
+                  {recipe.cleanup_audit}
+                </p>
+              </div>
+            </div>
+
+            {/* Footer Regenerate Action */}
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-white/[0.07]">
+              <div className="flex items-center gap-2 text-[11px] text-[#A5A39D]">
+                <Shield className="w-3.5 h-3.5 text-[#F4D779]" />
+                <span>On-device processing • TabPFN in-context model • Gemma 2 SLM</span>
+              </div>
+
+              <button
+                onClick={onRegenerate}
+                disabled={isLoading}
+                className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#202020] hover:bg-[#292929] text-[#F5F2EB] border border-white/[0.08] text-xs font-semibold transition-all cursor-pointer"
+              >
+                <RefreshCw className={`w-3.5 h-3.5 text-[#F4D779] ${isLoading ? 'animate-spin' : ''}`} />
+                <span>Regenerate Recipe</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* VIEW 2: DISTRACTION-FREE COOK-ALONG MODE */}
+      {viewMode === 'cook_along' && (
+        <div className="p-8 sm:p-12 min-h-[500px] flex flex-col justify-between animate-in fade-in duration-200">
+          <div>
+            <div className="flex items-center justify-between mb-8 pb-4 border-b border-white/[0.06]">
+              <div className="flex items-center gap-2">
+                <ChefHat className="w-5 h-5 text-[#F4D779]" />
+                <span className="font-display font-bold text-sm text-[#F5F2EB]">
+                  Cook-Along Focus Mode
+                </span>
+              </div>
+              <span className="font-mono text-xs text-[#F4D779] bg-[#F4D779]/10 px-3 py-1 rounded-full border border-[#F4D779]/20">
+                Step {currentCookStep + 1} of {recipe.steps.length}
+              </span>
+            </div>
+
+            {/* Big readable step card */}
+            <div className="bg-[#202020] rounded-3xl p-8 border border-white/[0.08] shadow-lg mb-8">
+              <span className="text-xs uppercase tracking-widest text-[#F4D779] font-bold block mb-3">
+                Instruction {currentCookStep + 1}
+              </span>
+              <p className="font-display font-bold text-xl sm:text-2xl text-[#F5F2EB] leading-relaxed">
+                {recipe.steps[currentCookStep]}
+              </p>
+            </div>
+
+            {/* Quick Cooking Tip for this step */}
+            <div className="p-4 rounded-2xl bg-[#242424] border border-white/[0.06] text-xs text-[#A5A39D] flex items-center gap-2.5 mb-6">
+              <span className="text-lg">💡</span>
+              <span>
+                Sloth Principle: Never use extra bowls. If an ingredient needs mixing, do it right in the pan.
+              </span>
+            </div>
+          </div>
+
+          {/* Navigation Controls */}
+          <div className="flex items-center justify-between gap-4 pt-6 border-t border-white/[0.06]">
+            <button
+              onClick={() => setCurrentCookStep((prev) => Math.max(0, prev - 1))}
+              disabled={currentCookStep === 0}
+              className={`flex items-center gap-2 px-5 py-3 rounded-2xl text-xs font-bold transition-all cursor-pointer ${
+                currentCookStep === 0
+                  ? 'opacity-40 cursor-not-allowed bg-[#202020] text-[#A5A39D]'
+                  : 'bg-[#202020] hover:bg-[#292929] text-[#F5F2EB]'
+              }`}
+            >
+              <ArrowLeft className="w-4 h-4" />
+              <span>Previous Step</span>
+            </button>
+
+            {currentCookStep < recipe.steps.length - 1 ? (
+              <button
+                onClick={() => {
+                  toggleStep(currentCookStep);
+                  setCurrentCookStep((prev) => prev + 1);
+                }}
+                className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-[#F4D779] hover:bg-[#E8CA6B] text-[#181818] font-bold text-xs transition-all shadow-lg cursor-pointer"
+              >
+                <span>Step Done & Next</span>
+                <ArrowRight className="w-4 h-4" />
+              </button>
+            ) : (
+              <button
+                onClick={() => {
+                  toggleStep(currentCookStep);
+                  setViewMode('overview');
+                  confetti({
+                    particleCount: 100,
+                    spread: 80,
+                    origin: { y: 0.6 }
+                  });
+                }}
+                className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-emerald-400 hover:bg-emerald-300 text-[#181818] font-bold text-xs transition-all shadow-lg cursor-pointer"
+              >
+                <span>Complete Recipe & Feast 🦥</span>
+              </button>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

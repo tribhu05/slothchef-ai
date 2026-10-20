@@ -1,21 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import confetti from 'canvas-confetti';
 import { SlothHeader } from './components/SlothHeader';
-import { SlothContract } from './components/SlothContract';
-import { PresetDisasters } from './components/PresetDisasters';
-import { PantrySelector } from './components/PantrySelector';
-import { SlothMetricsMeter } from './components/SlothMetricsMeter';
+import { KitchenStudio } from './components/KitchenStudio';
 import { RecipeCard } from './components/RecipeCard';
 import { TabPFNExplainerModal } from './components/TabPFNExplainerModal';
 import { PresetDisaster, SlothRecipe, SlothContractState } from './types';
-import { AlertCircle, Sparkles, ChefHat, Utensils, Clock, Flame } from 'lucide-react';
+import { AlertCircle, Sparkles, ChefHat } from 'lucide-react';
 
 const LOADING_MESSAGES = [
   "Minimizing unnecessary effort...",
-  "Negotiating with your leftovers...",
+  "Negotiating with your fridge leftovers...",
   "Prior Labs TabPFN calculating flavor harmony...",
-  "Consulting Gemma 2 for radical shortcuts...",
-  "Enforcing strict 1-pan dish constraints..."
+  "Consulting Gemma 2 for radical one-pan shortcuts...",
+  "Enforcing strict 1-pan dish bounds..."
 ];
 
 export const App: React.FC = () => {
@@ -71,7 +68,7 @@ export const App: React.FC = () => {
             const initVessel = p[0].vessel_preference || "One Skillet";
             setVesselPreference(initVessel);
 
-            // Auto-generate initial recipe so the application never loads empty
+            // Auto-generate initial recipe so the screen never displays an empty dead state
             try {
               setIsLoading(true);
               const genRes = await fetch('/api/recipe/generate', {
@@ -107,7 +104,6 @@ export const App: React.FC = () => {
 
         if (healthRes.ok) {
           const h = await healthRes.json();
-          // Detect whether Ollama local inference is running or cloud fallback
           if (h.status === 'healthy') {
             setInferenceMode('cloud');
           }
@@ -192,6 +188,11 @@ export const App: React.FC = () => {
     setSelectedPresetId(null);
   };
 
+  const handleClearIngredients = () => {
+    setSelectedIngredients([]);
+    setSelectedPresetId(null);
+  };
+
   return (
     <div className="min-h-screen flex flex-col bg-[#242424] text-[#F5F2EB] selection:bg-[#F4D779] selection:text-[#181818]">
       {/* Editorial Navigation Header */}
@@ -200,11 +201,11 @@ export const App: React.FC = () => {
         inferenceMode={inferenceMode}
       />
 
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-8">
-        {/* Editorial Hero Intro - Compact Banner */}
-        <div className="mb-6 flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-white/[0.06] pb-5">
+      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-8">
+        {/* Compact Editorial Hero Banner */}
+        <div className="mb-6 flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-white/[0.06] pb-4">
           <div className="max-w-2xl">
-            <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-[#181818] border border-white/[0.08] text-[11px] text-[#F4D779] font-medium mb-2">
+            <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-[#181818] border border-white/[0.08] text-[11px] text-[#F4D779] font-medium mb-1.5">
               <span>🦥 SlothChef Studio</span>
               <span className="w-1 h-1 rounded-full bg-[#F4D779]" />
               <span className="text-[#A5A39D]">DEV Hacktoberfest 2026</span>
@@ -216,15 +217,24 @@ export const App: React.FC = () => {
               Your kitchen. Your ingredients. Absolutely minimal effort. Powered by <span className="text-[#F5F2EB] font-medium">Prior Labs TabPFN-3.5</span> & <span className="text-[#F5F2EB] font-medium">Google Gemma 2</span>.
             </p>
           </div>
-          <div className="hidden md:flex items-center gap-2 shrink-0 text-xs text-[#A5A39D] bg-[#181818] px-3.5 py-2 rounded-2xl border border-white/[0.06]">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-            <span className="font-medium text-[#F5F2EB]">Zero-Effort Mode</span>
+          
+          <div className="flex items-center gap-2.5 shrink-0 text-xs text-[#A5A39D]">
+            <div className="flex items-center gap-2 bg-[#181818] px-3 py-1.5 rounded-2xl border border-white/[0.06]">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+              <span className="font-medium text-[#F5F2EB]">Zero-Prep Mode</span>
+            </div>
+            <button
+              onClick={() => setIsExplainerOpen(true)}
+              className="text-xs text-[#F4D779] hover:underline cursor-pointer bg-[#181818] px-3 py-1.5 rounded-2xl border border-white/[0.06]"
+            >
+              How TabPFN Works
+            </button>
           </div>
         </div>
 
         {/* Error Alert */}
         {error && (
-          <div className="p-4 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-400 text-xs font-medium mb-6 flex items-center justify-between gap-3">
+          <div className="p-4 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-400 text-xs font-medium mb-6 flex items-center justify-between gap-3 animate-in fade-in">
             <div className="flex items-center gap-2">
               <AlertCircle className="w-4 h-4 shrink-0" />
               <span>{error}</span>
@@ -238,38 +248,30 @@ export const App: React.FC = () => {
           </div>
         )}
 
-        {/* Fridge Disasters 3-Card Showcase */}
-        <PresetDisasters
-          presets={presets}
-          selectedId={selectedPresetId}
-          onSelect={handleSelectPreset}
-          isLoading={isLoading}
-        />
-
-        {/* Spacious 2-Column Responsive Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-          {/* Left Column: Constraints & Ingredient Scavenger (5 cols) */}
-          <div className="lg:col-span-5 space-y-6">
-            {/* The Sloth Contract Constraints */}
-            <SlothContract
-              contract={contract}
-              onChange={setContract}
-              vesselPreference={vesselPreference}
-              onVesselChange={setVesselPreference}
-            />
-
-            {/* Ingredient Selector */}
-            <PantrySelector
+        {/* Organized 2-Column Responsive Split */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 items-start">
+          {/* Left Column: Kitchen Studio Controls (5 cols) */}
+          <div className="lg:col-span-5 sticky top-20">
+            <KitchenStudio
               catalog={catalog}
               selectedIngredients={selectedIngredients}
               onAddIngredient={handleAddIngredient}
               onRemoveIngredient={handleRemoveIngredient}
+              onClearIngredients={handleClearIngredients}
+              presets={presets}
+              selectedPresetId={selectedPresetId}
+              onSelectPreset={handleSelectPreset}
+              contract={contract}
+              onContractChange={setContract}
+              vesselPreference={vesselPreference}
+              onVesselChange={setVesselPreference}
               onGenerate={() => handleGenerate()}
               isLoading={isLoading}
+              predictedHarmony={recipe?.harmony_score || 94}
             />
           </div>
 
-          {/* Right Column: Recipe Result & TabPFN Telemetry (7 cols) */}
+          {/* Right Column: Recipe Result & Interactive Cook-Along (7 cols) */}
           <div className="lg:col-span-7">
             {isLoading ? (
               <div className="bg-[#181818] rounded-3xl p-12 border border-white/[0.08] shadow-2xl flex flex-col items-center justify-center text-center min-h-[460px] animate-pulse">
@@ -288,18 +290,15 @@ export const App: React.FC = () => {
               </div>
             ) : recipe ? (
               <div className="animate-in fade-in duration-300">
-                <SlothMetricsMeter
-                  prediction={recipe.tabpfn_evidence}
-                  slothScore={recipe.sloth_score || 96}
-                />
                 <RecipeCard
                   recipe={recipe}
                   onRegenerate={() => handleGenerate()}
                   isLoading={isLoading}
+                  onOpenExplainer={() => setIsExplainerOpen(true)}
                 />
               </div>
             ) : (
-              /* Editorial Empty State */
+              /* Friendly Empty State */
               <div className="bg-[#181818] rounded-3xl p-10 border border-white/[0.07] text-center min-h-[400px] flex flex-col items-center justify-center">
                 <div className="w-14 h-14 rounded-2xl bg-[#202020] border border-white/[0.08] flex items-center justify-center text-2xl mb-4">
                   🍳
@@ -308,8 +307,7 @@ export const App: React.FC = () => {
                   Ready to Cook with Minimal Exertion
                 </h3>
                 <p className="text-xs text-[#A5A39D] max-w-md leading-relaxed mb-6">
-                  Pick a disaster preset above or enter whatever 3 sad ingredients you have in your fridge. 
-                  TabPFN and Gemma 2 will handle the culinary chemistry.
+                  Select a disaster preset on the left or tap 2–4 random fridge items to begin.
                 </p>
                 <button
                   onClick={() => handleGenerate()}
@@ -324,7 +322,7 @@ export const App: React.FC = () => {
       </main>
 
       {/* Editorial Footer */}
-      <footer className="border-t border-white/[0.06] bg-[#181818] py-6 text-xs text-[#A5A39D]">
+      <footer className="border-t border-white/[0.06] bg-[#181818] py-6 text-xs text-[#A5A39D] mt-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-3">
           <div className="flex items-center gap-2">
             <span className="font-display font-bold text-[#F5F2EB]">SlothChef</span>
