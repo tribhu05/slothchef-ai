@@ -444,7 +444,7 @@ VERIFIED_RECIPES: List[CuratedRecipe] = [
     # 13. Oats + Milk / Coconut Milk (Creamy Warm Oats)
     CuratedRecipe(
         id="creamy-oat-bowl",
-        title="5-Minute Velvet Coconut Oats",
+        title="5-Minute Creamy Porridge Oats",
         subtitle="Warm, creamy breakfast comfort synthesized in a single bowl",
         tagline="Warm porridge that coats your stomach with zero pots to scrub.",
         required_ids=["oats"],

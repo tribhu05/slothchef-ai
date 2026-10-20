@@ -43,6 +43,8 @@ export interface SlothRecipe {
   missing_suggestions?: MissingIngredientSuggestion[];
   safety_warnings?: string[];
   fit_explanation?: string;
+  image_caption?: string;
+  ai_engine_used?: string;
 }
 
 export interface PresetDisaster {

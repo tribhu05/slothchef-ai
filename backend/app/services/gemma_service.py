@@ -5,6 +5,7 @@ import httpx
 from typing import List, Dict, Any, Optional
 from app.models.schemas import SlothRecipe, TabPFNPrediction
 from app.services.decision_engine import evaluate_pantry
+from app.services.image_registry import resolve_recipe_image
 
 logger = logging.getLogger("slothchef.gemma")
 
@@ -500,6 +501,24 @@ class GemmaRecipeSynthesizer:
             img = "https://images.unsplash.com/photo-1546069901-d8a1c97a5a8e?auto=format&fit=crop&w=1200&q=80"
 
         # -------------------------------------------------------------
+        # ARCHETYPE 11: OATS / PORRIDGE (Warm single-vessel breakfast)
+        # -------------------------------------------------------------
+        elif has("oat", "porridge"):
+            title = "5-Minute Creamy Porridge Oats"
+            subtitle = f"Soothing warm breakfast comfort prepared in one vessel with {joined}"
+            tagline = "Warm porridge that coats your stomach with zero pots to scrub."
+            shortcuts = [
+                "Cook and eat in the exact same microwave-safe bowl or mini-skillet.",
+                "Swirl peanut butter or sweetener in while oats are steaming to create rich ribbons."
+            ]
+            steps = [
+                f"Add oats and 3/4 cup liquid (water, milk, or broth) to your {effective_vessel}.",
+                f"Heat on medium for 3 minutes (or microwave for 90 seconds) until thick and creamy.",
+                f"Swirl in {', '.join(ing_clean[1:]) if len(ing_clean) > 1 else 'sweetener'}, let rest 60 seconds, and dig in."
+            ]
+            img = "https://images.unsplash.com/photo-1584776296944-ab6fb57b0bdd?auto=format&fit=crop&w=1200&q=80"
+
+        # -------------------------------------------------------------
         # UNIVERSAL SMART CHEF COMPOSER (For Any Unique Custom Combo)
         # -------------------------------------------------------------
         else:
@@ -508,7 +527,7 @@ class GemmaRecipeSynthesizer:
             
             title = f"The {primary} & {secondary} Sloth Skillet"
             subtitle = f"A customized high-synergy survival sauté of {joined}"
-            tagline = f"TabPFN evaluated this pairing at {tabpfn.harmony_score}% flavor balance. We refuse to complicate it."
+            tagline = f"Flavor synergy evaluated at {tabpfn.harmony_score}% balance. We refuse to complicate it."
             shortcuts = [
                 "Tear all soft ingredients with your bare hands directly over the hot pan.",
                 "Cook everything in one sequential heat layer to build maximum savory fond."
@@ -518,7 +537,7 @@ class GemmaRecipeSynthesizer:
                 f"Add {ing_clean[0]} and sauté for 2 minutes until golden and aromatic.",
                 f"Fold in remaining ingredients ({', '.join(ing_clean[1:]) if len(ing_clean) > 1 else 'herbs'}), stir for 60 seconds, kill the heat, and feast."
             ]
-            img = "https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&w=1200&q=80"
+            img = "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=1200&q=80"
 
         # If Microwave-Only is enforced, adapt instructions
         if microwave_only:
@@ -571,6 +590,9 @@ class GemmaRecipeSynthesizer:
         # -------------------------------------------------------------
         if decision.status == "NO_GOOD_MATCH":
             recipe_id = f"sloth-{uuid.uuid4().hex[:8]}"
+            img_url, img_caption = resolve_recipe_image(
+                None, "No Credible Meal", [item.canonical_id for item in decision.normalized_ingredients], ingredients
+            )
             return SlothRecipe(
                 id=recipe_id,
                 title="No Credible Meal Possible",
@@ -578,7 +600,8 @@ class GemmaRecipeSynthesizer:
                 tagline="True Sloth Wisdom: Don't dirty a pan on ingredients that can't form a satisfying meal.",
                 sloth_efficiency="100% Energy Conserved (Stove Kept Off)",
                 sloth_score=99,
-                image_url="https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&w=1200&q=80",
+                image_url=img_url,
+                image_caption=img_caption,
                 vessel_type=effective_vessel,
                 utensil="1 Fork",
                 dishes_to_wash=0,
@@ -601,7 +624,8 @@ class GemmaRecipeSynthesizer:
                 decision_message=decision.decision_message,
                 missing_suggestions=decision.missing_suggestions,
                 safety_warnings=decision.safety_warnings,
-                fit_explanation=decision.fit_explanation
+                fit_explanation=decision.fit_explanation,
+                ai_engine_used="SlothChef Decision Engine"
             )
 
         # -------------------------------------------------------------
@@ -619,6 +643,13 @@ class GemmaRecipeSynthesizer:
                 "Heat and cook in 1 vessel."
             ]
 
+            img_url, img_caption = resolve_recipe_image(
+                curated.id if curated else None,
+                curated.title if curated else "Almost a Meal",
+                [item.canonical_id for item in decision.normalized_ingredients],
+                ingredients
+            )
+
             return SlothRecipe(
                 id=recipe_id,
                 title=curated.title if curated else "Almost a Complete Meal",
@@ -626,7 +657,8 @@ class GemmaRecipeSynthesizer:
                 tagline=curated.tagline if curated else "So close to dinner with zero knife skills.",
                 sloth_efficiency=f"{sloth_score}% Projected Efficiency",
                 sloth_score=sloth_score,
-                image_url=curated.image_url if curated else "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=1200&q=80",
+                image_url=img_url,
+                image_caption=img_caption,
                 vessel_type=effective_vessel,
                 utensil="1 Fork" if not (curated and "curry" in curated.id) else "1 Spoon",
                 dishes_to_wash=1,
@@ -643,7 +675,8 @@ class GemmaRecipeSynthesizer:
                 decision_message=decision.decision_message,
                 missing_suggestions=decision.missing_suggestions,
                 safety_warnings=decision.safety_warnings,
-                fit_explanation=decision.fit_explanation
+                fit_explanation=decision.fit_explanation,
+                ai_engine_used="SlothChef Decision Engine"
             )
 
         # -------------------------------------------------------------
@@ -665,6 +698,13 @@ class GemmaRecipeSynthesizer:
                 ]
                 shortcuts.append("Microwave in the eating bowl to skip stove cleanup completely.")
 
+            img_url, img_caption = resolve_recipe_image(
+                curated.id,
+                curated.title,
+                [item.canonical_id for item in decision.normalized_ingredients],
+                ingredients
+            )
+
             return SlothRecipe(
                 id=recipe_id,
                 title=curated.title,
@@ -672,7 +712,8 @@ class GemmaRecipeSynthesizer:
                 tagline=curated.tagline,
                 sloth_efficiency=f"{sloth_score}% Energy Conserved",
                 sloth_score=sloth_score,
-                image_url=curated.image_url,
+                image_url=img_url,
+                image_caption=img_caption,
                 vessel_type=effective_vessel,
                 utensil="1 Fork" if not ("curry" in curated.id or "oat" in curated.id) else "1 Spoon",
                 dishes_to_wash=1,
@@ -689,7 +730,8 @@ class GemmaRecipeSynthesizer:
                 decision_message=decision.decision_message,
                 missing_suggestions=[],
                 safety_warnings=decision.safety_warnings,
-                fit_explanation=decision.fit_explanation
+                fit_explanation=decision.fit_explanation,
+                ai_engine_used="Verified Recipe Catalog"
             )
 
         # Fallback to Ollama or dynamic offline if verified candidate wasn't pre-indexed
@@ -705,6 +747,8 @@ class GemmaRecipeSynthesizer:
         )
 
         gen_data = await self._try_ollama_generate(prompt)
+        ai_engine = "Google Gemma 2 (Local SLM)" if gen_data else "SlothChef Decision Engine (Offline)"
+        
         if not gen_data:
             gen_data = self._synthesize_dynamic_offline(
                 ingredients=ingredients,
@@ -716,15 +760,24 @@ class GemmaRecipeSynthesizer:
         recipe_id = f"sloth-{uuid.uuid4().hex[:8]}"
         active_time = min(max_active_minutes, tabpfn.active_standing_minutes)
         sloth_score = max(75, min(99, int(100 - (active_time * 2) - 1)))
+        recipe_title = gen_data.get("title", "The Sloth Skillet")
+
+        img_url, img_caption = resolve_recipe_image(
+            None,
+            recipe_title,
+            [item.canonical_id for item in decision.normalized_ingredients],
+            ingredients
+        )
 
         return SlothRecipe(
             id=recipe_id,
-            title=gen_data.get("title", "The Sloth Skillet"),
+            title=recipe_title,
             subtitle=gen_data.get("subtitle", "Low-effort culinary survival"),
             tagline=gen_data.get("tagline", "Less dishes, more resting."),
             sloth_efficiency=gen_data.get("sloth_efficiency", f"{sloth_score}% Energy Conserved"),
             sloth_score=sloth_score,
-            image_url=gen_data.get("image_url", "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=1200&q=80"),
+            image_url=img_url,
+            image_caption=img_caption,
             vessel_type=effective_vessel,
             utensil=gen_data.get("utensil", "1 Fork"),
             dishes_to_wash=1,
@@ -741,7 +794,8 @@ class GemmaRecipeSynthesizer:
             decision_message="Custom recipe generated from validated ingredients.",
             missing_suggestions=[],
             safety_warnings=decision.safety_warnings,
-            fit_explanation=decision.fit_explanation
+            fit_explanation=decision.fit_explanation,
+            ai_engine_used=ai_engine
         )
 
 # Global singleton

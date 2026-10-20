@@ -133,7 +133,7 @@ export const RecipeCard: React.FC<RecipeCardProps> = ({
     return `${m}:${s < 10 ? '0' : ''}${s}`;
   };
 
-  const heroImage = recipe.image_url || "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=1200&q=80";
+  const heroImage = recipe.image_url || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=1200&q=80";
   const progressPercent = Math.round((completedSteps.length / recipe.steps.length) * 100);
   const tabpfn = recipe.tabpfn_evidence;
 
@@ -267,13 +267,13 @@ export const RecipeCard: React.FC<RecipeCardProps> = ({
               alt={recipe.title}
               className="w-full h-full object-cover filter brightness-[0.88]"
               onError={(e) => {
-                e.currentTarget.src = "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=1200&q=80";
+                e.currentTarget.src = "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=1200&q=80";
               }}
             />
             <div className="absolute inset-0 bg-gradient-to-t from-[#181818] via-[#181818]/60 to-transparent" />
 
             {/* Floating Top Badges */}
-            <div className="absolute top-4 left-4 right-4 flex items-center justify-between gap-2">
+            <div className="absolute top-4 left-4 right-4 flex items-center justify-between gap-2 flex-wrap">
               <div className="flex items-center gap-2">
                 <span className="text-xs font-bold px-3 py-1 rounded-full bg-[#181818]/90 backdrop-blur-md border border-[#F4D779]/40 text-[#F4D779] shadow-md">
                   Sloth Score: {recipe.sloth_score || 96}/100
@@ -283,9 +283,17 @@ export const RecipeCard: React.FC<RecipeCardProps> = ({
                 </span>
               </div>
 
-              <span className="text-xs font-mono font-medium px-2.5 py-1 rounded-full bg-emerald-500/20 backdrop-blur-md border border-emerald-500/30 text-emerald-300">
-                🍳 1 Pan • 🍴 1 Utensil • 🔪 0 Knives
-              </span>
+              <div className="flex items-center gap-2">
+                {recipe.image_caption && (
+                  <span className="hidden sm:inline-flex items-center gap-1 text-[11px] font-medium px-2.5 py-1 rounded-full bg-[#181818]/90 backdrop-blur-md border border-white/[0.1] text-[#F5F2EB]/90">
+                    <span>📷</span>
+                    <span>{recipe.image_caption}</span>
+                  </span>
+                )}
+                <span className="text-xs font-mono font-medium px-2.5 py-1 rounded-full bg-emerald-500/20 backdrop-blur-md border border-emerald-500/30 text-emerald-300">
+                  🍳 1 Pan • 🍴 1 Utensil • 🔪 0 Knives
+                </span>
+              </div>
             </div>
 
             {/* Title & Tagline overlay */}
@@ -448,7 +456,7 @@ export const RecipeCard: React.FC<RecipeCardProps> = ({
                 <div className="flex items-center gap-2.5">
                   <Zap className="w-4 h-4 text-[#F4D779]" />
                   <span className="font-display font-bold text-xs uppercase tracking-wider text-[#F5F2EB]">
-                    Prior Labs TabPFN-3.5 Flavor Harmony Telemetry
+                    TabPFN-3.5 Flavor Harmony & Prior Fitting
                   </span>
                   <span className="text-[11px] font-mono font-bold text-[#F4D779] bg-[#F4D779]/10 px-2 py-0.5 rounded-full border border-[#F4D779]/20">
                     {tabpfn.harmony_score}% Match
@@ -488,7 +496,7 @@ export const RecipeCard: React.FC<RecipeCardProps> = ({
                   </span>
                 </div>
                 <div className="text-center p-2 rounded-xl bg-[#292929]">
-                  <span className="text-[10px] text-[#A5A39D] block">Bayesian Conf</span>
+                  <span className="text-[10px] text-[#A5A39D] block">Prior Alignment</span>
                   <span className="font-display font-extrabold text-sm text-[#F5F2EB]">
                     {Math.round(tabpfn.confidence * 100)}%
                   </span>
@@ -523,7 +531,7 @@ export const RecipeCard: React.FC<RecipeCardProps> = ({
                   {tabpfn.pairing_synergies && tabpfn.pairing_synergies.length > 0 && (
                     <div>
                       <span className="text-[11px] font-semibold text-[#A5A39D] uppercase tracking-wider block mb-1.5">
-                        Tabular Foundation Model Synergies
+                        In-Context TabPFN Flavor Interactions
                       </span>
                       <div className="space-y-1">
                         {tabpfn.pairing_synergies.map((syn, idx) => (
@@ -542,6 +550,50 @@ export const RecipeCard: React.FC<RecipeCardProps> = ({
             {/* Radical Sloth Shortcuts & Steps (Only when a valid dish is ready or in progress) */}
             {recipe.status !== "NO_GOOD_MATCH" && (
               <>
+                {/* Ingredients in this Pan Breakdown */}
+                {recipe.ingredients_used && recipe.ingredients_used.length > 0 && (
+                  <div className="p-4 sm:p-5 rounded-2xl bg-[#202020] border border-white/[0.07] space-y-3">
+                    <div className="flex items-center justify-between gap-2 flex-wrap">
+                      <h3 className="font-display font-semibold text-xs uppercase tracking-wider text-[#A5A39D] flex items-center gap-2">
+                        <Utensils className="w-4 h-4 text-[#F4D779]" />
+                        <span>Ingredients in this Pan ({recipe.ingredients_used.length} Items)</span>
+                      </h3>
+                      <div className="flex items-center gap-2 text-[11px] font-mono">
+                        <span className="text-[#A5A39D] bg-[#181818] px-2.5 py-0.5 rounded-full border border-white/[0.06]">
+                          Vessel: <strong className="text-[#F5F2EB]">{recipe.vessel_type}</strong>
+                        </span>
+                        <span className="text-[#A5A39D] bg-[#181818] px-2.5 py-0.5 rounded-full border border-white/[0.06]">
+                          Tool: <strong className="text-[#F5F2EB]">{recipe.utensil}</strong>
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="flex flex-wrap gap-2">
+                      {recipe.ingredients_used.map((ing, i) => {
+                        const isOptional = ing.toLowerCase().includes('optional');
+                        return (
+                          <span
+                            key={i}
+                            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium border transition-colors ${
+                              isOptional
+                                ? 'bg-[#181818] border-dashed border-white/20 text-[#A5A39D]'
+                                : 'bg-[#181818] border-white/10 text-[#F5F2EB]'
+                            }`}
+                          >
+                            <span className="text-[10px]">{isOptional ? '⚪' : '🟢'}</span>
+                            <span className="capitalize">{ing.replace(/\s*\(optional\)/i, '')}</span>
+                            {isOptional && (
+                              <span className="text-[9px] text-[#A5A39D] uppercase tracking-wider bg-[#242424] px-1.5 py-0.5 rounded font-mono">
+                                optional
+                              </span>
+                            )}
+                          </span>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
                 {/* Radical Sloth Shortcuts */}
                 <div>
                   <h3 className="font-display font-semibold text-xs uppercase tracking-wider text-[#A5A39D] mb-3 flex items-center gap-2">
@@ -656,7 +708,9 @@ export const RecipeCard: React.FC<RecipeCardProps> = ({
             <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-white/[0.07]">
               <div className="flex items-center gap-2 text-[11px] text-[#A5A39D]">
                 <Shield className="w-3.5 h-3.5 text-[#F4D779]" />
-                <span>On-device processing • TabPFN in-context model • Gemma 2 SLM</span>
+                <span>
+                  Engine: <strong className="text-[#F5F2EB]">{recipe.ai_engine_used || "SlothChef Decision Engine"}</strong> • Prior Labs TabPFN-3.5
+                </span>
               </div>
 
               <button

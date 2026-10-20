@@ -63,4 +63,6 @@ class SlothRecipe(BaseModel):
     missing_suggestions: List[MissingIngredientSuggestion] = Field(default_factory=list)
     safety_warnings: List[str] = Field(default_factory=list)
     fit_explanation: Optional[str] = None
+    image_caption: Optional[str] = "Verified 1-Pan Presentation"
+    ai_engine_used: Optional[str] = "SlothChef Decision Engine"
 

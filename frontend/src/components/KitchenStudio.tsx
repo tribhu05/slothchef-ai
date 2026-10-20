@@ -180,8 +180,8 @@ export const KitchenStudio: React.FC<KitchenStudioProps> = ({
             <span className="text-[#F4D779]">Tap to load & synthesize</span>
           </div>
 
-          <div className="space-y-2.5">
-            {presets.slice(0, 3).map((preset) => {
+          <div className="space-y-2.5 max-h-[380px] overflow-y-auto pr-1">
+            {presets.map((preset) => {
               const isSelected = selectedPresetId === preset.id;
               return (
                 <div
@@ -196,9 +196,12 @@ export const KitchenStudio: React.FC<KitchenStudioProps> = ({
                   {/* Thumbnail */}
                   <div className="w-16 h-16 rounded-xl overflow-hidden bg-[#242424] shrink-0 relative">
                     <img
-                      src={preset.image_url || "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=400&q=80"}
+                      src={preset.image_url || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=400&q=80"}
                       alt={preset.title}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      onError={(e) => {
+                        e.currentTarget.src = "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=400&q=80";
+                      }}
                     />
                     <div className="absolute inset-0 bg-black/20" />
                     <span className="absolute bottom-1 right-1 text-xs">
@@ -509,7 +512,7 @@ export const KitchenStudio: React.FC<KitchenStudioProps> = ({
         <div className="flex items-center justify-between mt-2.5 px-1 text-[11px] text-[#A5A39D]">
           <span>{selectedIngredients.length} ingredients queued</span>
           <span className="text-[#F4D779] font-medium">
-            TabPFN in-context Bayesian model ready
+            Prior Labs TabPFN-3.5 Prior Vectors Ready
           </span>
         </div>
       </div>

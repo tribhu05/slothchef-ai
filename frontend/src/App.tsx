@@ -299,7 +299,42 @@ export const App: React.FC = () => {
 
           {/* Right Column: Recipe Result & Interactive Cook-Along (7 cols) */}
           <div className="lg:col-span-7">
-            {isLoading ? (
+            {recipe ? (
+              <div className="relative">
+                {/* Non-jarring Loading Banner Overlay when regenerating existing recipe */}
+                {isLoading && (
+                  <div className="sticky top-20 z-30 mb-3 p-3.5 rounded-2xl bg-[#202020]/95 backdrop-blur-md border border-[#F4D779]/40 shadow-xl flex items-center justify-between gap-3 animate-in fade-in slide-in-from-top-2 duration-200">
+                    <div className="flex items-center gap-3">
+                      <div className="w-7 h-7 rounded-xl bg-[#181818] border border-[#F4D779]/30 flex items-center justify-center text-sm shadow-inner shrink-0">
+                        🦥
+                      </div>
+                      <div>
+                        <span className="font-display font-bold text-xs text-[#F5F2EB] block">
+                          {LOADING_MESSAGES[loadingMessageIdx]}
+                        </span>
+                        <span className="text-[10px] text-[#A5A39D]">
+                          Recalibrating 1-pan constraints & TabPFN prior vectors...
+                        </span>
+                      </div>
+                    </div>
+                    <div className="w-20 bg-[#292929] rounded-full h-1.5 overflow-hidden shrink-0">
+                      <div className="bg-[#F4D779] h-1.5 rounded-full w-2/3 animate-[pulse_0.8s_ease-in-out_infinite]" />
+                    </div>
+                  </div>
+                )}
+
+                <div className={`transition-opacity duration-200 ${isLoading ? 'opacity-65 pointer-events-none' : 'opacity-100'}`}>
+                  <RecipeCard
+                    recipe={recipe}
+                    onRegenerate={() => handleGenerate()}
+                    isLoading={isLoading}
+                    onOpenExplainer={() => setIsExplainerOpen(true)}
+                    onAddMissingAndCook={handleAddMissingAndCook}
+                  />
+                </div>
+              </div>
+            ) : isLoading ? (
+              /* Full Initial Skeleton only on first ever load before recipe exists */
               <div className="bg-[#181818] rounded-3xl p-12 border border-white/[0.08] shadow-2xl flex flex-col items-center justify-center text-center min-h-[460px] animate-pulse">
                 <div className="w-16 h-16 rounded-3xl bg-[#202020] border border-[#F4D779]/30 flex items-center justify-center text-3xl mb-5 shadow-lg">
                   🦥
@@ -313,16 +348,6 @@ export const App: React.FC = () => {
                 <div className="w-48 bg-[#292929] rounded-full h-1.5 mt-6 overflow-hidden">
                   <div className="bg-[#F4D779] h-1.5 rounded-full w-2/3 animate-[pulse_1s_ease-in-out_infinite]" />
                 </div>
-              </div>
-            ) : recipe ? (
-              <div className="animate-in fade-in duration-300">
-                <RecipeCard
-                  recipe={recipe}
-                  onRegenerate={() => handleGenerate()}
-                  isLoading={isLoading}
-                  onOpenExplainer={() => setIsExplainerOpen(true)}
-                  onAddMissingAndCook={handleAddMissingAndCook}
-                />
               </div>
             ) : (
               /* Friendly Empty State */

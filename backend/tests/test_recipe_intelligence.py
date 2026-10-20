@@ -198,3 +198,31 @@ async def test_differentiation_across_inputs():
     assert r1.title != r3.title
     assert r1.steps != r2.steps
     assert r2.steps != r3.steps
+
+@pytest.mark.asyncio
+async def test_image_registry_and_caption_trustworthiness():
+    """Verify that oat recipes never display salad photos, and images have truthful captions."""
+    from app.services.image_registry import resolve_recipe_image
+    
+    # 1. Direct registry lookup
+    img, caption = resolve_recipe_image(
+        recipe_id="creamy-oat-bowl",
+        title="5-Minute Creamy Porridge Oats",
+        canonical_ids=["oats", "milk"]
+    )
+    assert "photo-1584776296944" in img
+    assert "photo-1540420773420" not in img
+    assert "Oats" in caption or "Porridge" in caption or "Oatmeal" in caption
+
+    # 2. End-to-end recipe generation for Oats + Milk
+    pantry = ["Rolled oats", "Whole milk"]
+    tabpfn = tabpfn_predictor.predict(pantry)
+    recipe = await gemma_synthesizer.generate_recipe(pantry, tabpfn)
+    
+    assert "Oat" in recipe.title or "Porridge" in recipe.title
+    assert "photo-1584776296944" in recipe.image_url
+    assert "photo-1540420773420" not in recipe.image_url  # No raw garden salad photo!
+    assert recipe.image_caption is not None
+    assert recipe.ai_engine_used is not None
+    assert len(recipe.ingredients_used) >= 2
+
