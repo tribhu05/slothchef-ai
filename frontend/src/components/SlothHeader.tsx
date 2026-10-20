@@ -1,51 +1,84 @@
 import React from 'react';
-import { Sparkles, Utensils, Brain, ShieldCheck } from 'lucide-react';
+import { Brain, Cpu, Sparkles } from 'lucide-react';
 
 interface SlothHeaderProps {
   onOpenExplainer: () => void;
+  inferenceMode: 'local' | 'cloud' | 'demo';
 }
 
-export const SlothHeader: React.FC<SlothHeaderProps> = ({ onOpenExplainer }) => {
+export const SlothHeader: React.FC<SlothHeaderProps> = ({ onOpenExplainer, inferenceMode }) => {
+  const getBadgeConfig = () => {
+    switch (inferenceMode) {
+      case 'local':
+        return {
+          label: 'Local AI (Gemma 2)',
+          dotColor: 'bg-emerald-400',
+          textColor: 'text-emerald-400',
+          bgColor: 'bg-emerald-500/10',
+          borderColor: 'border-emerald-500/20'
+        };
+      case 'cloud':
+        return {
+          label: 'Cloud AI (TabPFN + Gemma)',
+          dotColor: 'bg-amber-300',
+          textColor: 'text-[#F4D779]',
+          bgColor: 'bg-[#F4D779]/10',
+          borderColor: 'border-[#F4D779]/20'
+        };
+      case 'demo':
+      default:
+        return {
+          label: 'Fast Engine (TabPFN-3.5)',
+          dotColor: 'bg-[#F4D779]',
+          textColor: 'text-[#F4D779]',
+          bgColor: 'bg-[#F4D779]/10',
+          borderColor: 'border-[#F4D779]/20'
+        };
+    }
+  };
+
+  const badge = getBadgeConfig();
+
   return (
-    <header className="border-b border-amber-200/60 bg-amber-100/40 backdrop-blur-md sticky top-0 z-30">
-      <div className="max-w-6xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+    <header className="border-b border-white/[0.07] bg-[#181818]/90 backdrop-blur-xl sticky top-0 z-40">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3.5 flex items-center justify-between gap-4">
+        {/* Logo and Brand */}
         <div className="flex items-center gap-3">
-          <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-amber-600 to-amber-400 flex items-center justify-center text-2xl shadow-md shadow-amber-900/10 transform -rotate-3">
+          <div className="w-10 h-10 rounded-2xl bg-[#202020] border border-white/[0.08] flex items-center justify-center text-xl shadow-inner">
             🦥
           </div>
           <div>
-            <div className="flex items-center gap-2">
-              <span className="font-display font-bold text-xl tracking-tight text-amber-950">
+            <div className="flex items-center gap-2.5">
+              <span className="font-display font-bold text-lg tracking-tight text-[#F5F2EB]">
                 SlothChef
               </span>
-              <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300">
-                DEV Hacktoberfest W3
+              <span className="text-[10px] font-semibold tracking-wide px-2 py-0.5 rounded-full bg-white/[0.05] text-[#A5A39D] border border-white/[0.08] uppercase">
+                DEV W3
               </span>
             </div>
-            <p className="text-xs text-amber-800/80 font-medium hidden sm:block">
-              The Extreme Low-Effort, One-Pan Survival Engine
+            <p className="text-[11px] text-[#A5A39D] font-normal hidden sm:block">
+              Your kitchen. Your ingredients. Absolutely minimal effort.
             </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-2 text-xs">
+        {/* Status Indicators & Actions */}
+        <div className="flex items-center gap-2.5 text-xs">
+          {/* Real Inference Mode Badge */}
+          <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full ${badge.bgColor} ${badge.borderColor} border font-medium ${badge.textColor}`}>
+            <span className={`w-1.5 h-1.5 rounded-full ${badge.dotColor} animate-pulse`} />
+            <span className="text-[11px] font-mono tracking-tight">{badge.label}</span>
+          </div>
+
+          {/* TabPFN Telemetry Button */}
           <button
             onClick={onOpenExplainer}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/80 hover:bg-white text-stone-700 hover:text-stone-900 border border-amber-200 transition-all shadow-xs cursor-pointer font-medium"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#202020] hover:bg-[#292929] text-[#A5A39D] hover:text-[#F5F2EB] border border-white/[0.08] transition-all cursor-pointer font-medium"
+            title="Inspect Prior Labs TabPFN Bayesian In-Context Model"
           >
-            <Brain className="w-3.5 h-3.5 text-purple-600" />
-            <span>TabPFN-3.5 Math</span>
+            <Brain className="w-3.5 h-3.5 text-[#F4D779]" />
+            <span className="hidden sm:inline text-xs">TabPFN Math</span>
           </button>
-
-          <div className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-200/50 text-amber-900 border border-amber-300/60 font-medium">
-            <Utensils className="w-3.5 h-3.5 text-amber-700" />
-            <span>Rule: Strict 1-Pan Cap</span>
-          </div>
-
-          <div className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-emerald-500/10 text-emerald-800 border border-emerald-500/20 font-medium">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-            <span>Gemma 2 + TabPFN</span>
-          </div>
         </div>
       </div>
     </header>

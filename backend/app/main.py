@@ -76,9 +76,13 @@ async def generate_recipe(req: RecipeRequest) -> SlothRecipe:
         ingredients=req.ingredients,
         tabpfn=tabpfn_res,
         vessel=req.vessel_preference or "One Skillet",
-        sloth_intensity=req.sloth_intensity or "Maximum"
+        sloth_intensity=req.sloth_intensity or "Maximum",
+        microwave_only=bool(req.microwave_only),
+        minimal_chopping=bool(req.minimal_chopping if req.minimal_chopping is not None else True),
+        max_active_minutes=int(req.max_active_minutes or 5)
     )
     return recipe
+
 
 # Static SPA mounting for production / Render
 FRONTEND_DIST = Path(__file__).resolve().parent.parent.parent / "frontend" / "dist"

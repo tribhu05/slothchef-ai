@@ -60,56 +60,62 @@ def get_ingredient_profile(name: str) -> IngredientItem:
 PRESET_DISASTERS = [
     {
         "id": "post-deploy-desperation",
-        "title": "The Post-Deploy Desperation",
+        "title": "Post-Deploy Desperation",
         "emoji": "🍜",
         "description": "It is 2:30 AM, production is stable, your soul is drained, and you have instant ramen and condiments.",
         "ingredients": ["Ramen noodles", "Peanut butter", "Sriracha", "Soy sauce"],
-        "vessel_preference": "One Skillet / Pot",
-        "target_time": "3 mins"
-    },
-    {
-        "id": "pantry-pauper-curry",
-        "title": "The 9 PM Pantry Pauper",
-        "emoji": "🥥",
-        "description": "Canned goods from 2024 that refuse to die, transformed into a velvety luxury stew.",
-        "ingredients": ["Canned chickpeas", "Curry powder", "Coconut milk (canned)", "Frozen peas"],
         "vessel_preference": "One Skillet",
-        "target_time": "5 mins"
+        "target_time": "3 mins",
+        "image_url": "https://images.unsplash.com/photo-1569718212165-3a8278d5f624?auto=format&fit=crop&w=800&q=80"
     },
     {
         "id": "college-stale-special",
-        "title": "The College Stale Special",
+        "title": "College Stale Special",
         "emoji": "🧀",
         "description": "Stale bottom-of-the-bag chips and canned beans rescued into restaurant-grade chilaquiles.",
         "ingredients": ["Corn tortilla chips", "Canned black beans", "Cheddar cheese", "Salsa (jarred)"],
         "vessel_preference": "One Skillet",
-        "target_time": "4 mins"
+        "target_time": "4 mins",
+        "image_url": "https://images.unsplash.com/photo-1513456852971-30c0b8199d4d?auto=format&fit=crop&w=800&q=80"
+    },
+    {
+        "id": "pantry-pauper-curry",
+        "title": "9 PM Pantry Pauper",
+        "emoji": "🥥",
+        "description": "Canned goods from 2024 that refuse to die, transformed into a velvety luxury stew.",
+        "ingredients": ["Canned chickpeas", "Curry powder", "Coconut milk (canned)", "Frozen peas"],
+        "vessel_preference": "One Skillet",
+        "target_time": "5 mins",
+        "image_url": "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=800&q=80"
     },
     {
         "id": "midnight-carbonara-cheat",
-        "title": "The Sloth Carbonara Cheat",
+        "title": "Sloth Carbonara Cheat",
         "emoji": "🍳",
         "description": "Italian grandmothers may weep, but your belly is full in 4 minutes with zero pans to soak.",
         "ingredients": ["Ramen noodles", "Eggs", "Cheddar cheese", "Butter", "Black pepper"],
         "vessel_preference": "Single Pot",
-        "target_time": "4 mins"
+        "target_time": "4 mins",
+        "image_url": "https://images.unsplash.com/photo-1612874742237-6526221588e3?auto=format&fit=crop&w=800&q=80"
     },
     {
         "id": "scavenger-tuna-rice",
-        "title": "The Campfire Tuna Mayo Bowl",
+        "title": "Campfire Tuna Mayo Bowl",
         "emoji": "🐟",
         "description": "Zero heat required. Mix directly in the bowl you eat from. Peak energy conservation.",
         "ingredients": ["Canned tuna", "Rice (cooked/leftover)", "Mayonnaise", "Soy sauce", "Green onion"],
         "vessel_preference": "Microwave Bowl",
-        "target_time": "2 mins"
+        "target_time": "2 mins",
+        "image_url": "https://images.unsplash.com/photo-1546069901-d8a1c97a5a8e?auto=format&fit=crop&w=800&q=80"
     },
     {
         "id": "sloth-kimchi-rice",
-        "title": "The Sleepy Kimchi Sizzle",
+        "title": "Sleepy Kimchi Sizzle",
         "emoji": "🥬",
         "description": "Cold rice + sour fermented cabbage + sizzled egg. The ultimate 1-skillet comfort.",
         "ingredients": ["Rice (cooked/leftover)", "Kimchi", "Eggs", "Butter", "Soy sauce"],
         "vessel_preference": "One Skillet",
-        "target_time": "4 mins"
+        "target_time": "4 mins",
+        "image_url": "https://images.unsplash.com/photo-1590301157890-4810ed352733?auto=format&fit=crop&w=800&q=80"
     }
 ]

@@ -1,30 +1,25 @@
 import React, { useState } from 'react';
-import { Plus, X, Search, Sparkles, Wand2, ChefHat, Check } from 'lucide-react';
+import { Plus, X, Sparkles, Check, Search, Tag } from 'lucide-react';
 
 interface PantrySelectorProps {
   catalog: string[];
   selectedIngredients: string[];
   onAddIngredient: (name: string) => void;
   onRemoveIngredient: (name: string) => void;
-  vesselPreference: string;
-  onVesselChange: (vessel: string) => void;
   onGenerate: () => void;
   isLoading: boolean;
 }
-
-const VESSELS = ["One Skillet", "Single Pot", "Microwave Safe Bowl"];
 
 export const PantrySelector: React.FC<PantrySelectorProps> = ({
   catalog,
   selectedIngredients,
   onAddIngredient,
   onRemoveIngredient,
-  vesselPreference,
-  onVesselChange,
   onGenerate,
   isLoading
 }) => {
   const [customInput, setCustomInput] = useState('');
+  const [filterQuery, setFilterQuery] = useState('');
 
   const handleAddCustom = (e: React.FormEvent) => {
     e.preventDefault();
@@ -34,56 +29,43 @@ export const PantrySelector: React.FC<PantrySelectorProps> = ({
     }
   };
 
-  return (
-    <div className="bg-white/90 backdrop-blur-sm rounded-3xl p-5 border border-amber-200/90 shadow-sm mb-6">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
-        <div>
-          <h2 className="font-display font-bold text-lg text-stone-900 flex items-center gap-2">
-            <span>What sad items are in your fridge right now?</span>
-          </h2>
-          <p className="text-xs text-stone-500">
-            Select staples or type whatever random ingredients you have left.
-          </p>
-        </div>
+  const filteredCatalog = catalog.filter((item) =>
+    item.toLowerCase().includes(filterQuery.toLowerCase())
+  );
 
-        {/* Vessel Preference */}
-        <div className="flex items-center gap-1.5 p-1 bg-amber-50 rounded-2xl border border-amber-200/70 self-start md:self-auto">
-          {VESSELS.map((v) => (
-            <button
-              key={v}
-              type="button"
-              onClick={() => onVesselChange(v)}
-              className={`px-3 py-1.5 text-xs font-semibold rounded-xl transition-all cursor-pointer ${
-                vesselPreference === v
-                  ? 'bg-amber-600 text-white shadow-xs'
-                  : 'text-stone-600 hover:text-stone-900'
-              }`}
-            >
-              {v}
-            </button>
-          ))}
-        </div>
+  return (
+    <div className="bg-[#181818] rounded-3xl p-5 sm:p-6 border border-white/[0.07] shadow-xl mb-7">
+      <div className="mb-4">
+        <h2 className="font-display font-bold text-lg text-[#F5F2EB] flex items-center gap-2">
+          <span>What sad items are in your fridge right now?</span>
+        </h2>
+        <p className="text-xs text-[#A5A39D] mt-0.5">
+          Type whatever random ingredients you have left or pick from common staples below.
+        </p>
       </div>
 
       {/* Selected Ingredients Tag Cloud */}
-      <div className="min-h-[50px] p-3 rounded-2xl bg-amber-50/60 border border-amber-200/60 flex flex-wrap items-center gap-2 mb-4">
+      <div className="min-h-[58px] p-3 rounded-2xl bg-[#202020] border border-white/[0.07] flex flex-wrap items-center gap-2 mb-4">
         {selectedIngredients.length === 0 ? (
-          <span className="text-xs text-amber-900/40 italic">
-            No ingredients selected. Pick from the staples below or click a preset above...
-          </span>
+          <div className="text-xs text-[#A5A39D]/60 italic flex items-center gap-1.5 px-2">
+            <Tag className="w-3.5 h-3.5" />
+            <span>No ingredients selected yet. Add 2–4 items to begin...</span>
+          </div>
         ) : (
           selectedIngredients.map((ing) => (
             <span
               key={ing}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500/15 text-amber-950 border border-amber-400/40 text-xs font-bold animate-in fade-in zoom-in duration-150"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#292929] text-[#F5F2EB] border border-white/[0.1] text-xs font-medium hover:border-[#F4D779]/40 transition-colors animate-in fade-in zoom-in duration-150"
             >
+              <span className="w-1.5 h-1.5 rounded-full bg-[#F4D779]" />
               <span>{ing}</span>
               <button
                 type="button"
                 onClick={() => onRemoveIngredient(ing)}
-                className="hover:bg-amber-400/30 rounded-full p-0.5 transition-colors cursor-pointer"
+                className="hover:bg-white/[0.1] text-[#A5A39D] hover:text-[#F5F2EB] rounded-full p-0.5 transition-colors cursor-pointer"
+                title={`Remove ${ing}`}
               >
-                <X className="w-3.5 h-3.5" />
+                <X className="w-3 h-3" />
               </button>
             </span>
           ))
@@ -91,32 +73,44 @@ export const PantrySelector: React.FC<PantrySelectorProps> = ({
       </div>
 
       {/* Custom Input Bar */}
-      <form onSubmit={handleAddCustom} className="flex gap-2 mb-4">
+      <form onSubmit={handleAddCustom} className="flex gap-2.5 mb-5">
         <div className="relative flex-1">
           <input
             type="text"
             value={customInput}
             onChange={(e) => setCustomInput(e.target.value)}
-            placeholder="Add custom item (e.g. half a zucchini, leftover curry paste, feta)..."
-            className="w-full px-4 py-2.5 rounded-2xl border border-amber-200/80 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/50"
+            placeholder="Type ingredient (e.g. half a zucchini, leftover curry paste, feta)..."
+            className="w-full px-4 py-2.5 rounded-2xl border border-white/[0.1] bg-[#202020] text-sm text-[#F5F2EB] placeholder:text-[#A5A39D]/50 focus:outline-none focus:border-[#F4D779]/60 focus:ring-1 focus:ring-[#F4D779]/40 transition-all"
           />
         </div>
         <button
           type="submit"
-          className="px-4 py-2.5 rounded-2xl bg-stone-800 hover:bg-stone-900 text-white text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer"
+          className="px-5 py-2.5 rounded-2xl bg-[#292929] hover:bg-[#333] text-[#F5F2EB] border border-white/[0.08] text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
         >
-          <Plus className="w-4 h-4" />
+          <Plus className="w-4 h-4 text-[#F4D779]" />
           <span>Add</span>
         </button>
       </form>
 
       {/* Quick Select Staples */}
-      <div className="mb-5">
-        <span className="text-[11px] font-bold uppercase tracking-wider text-stone-400 block mb-2">
-          Common Scavenged Staples:
-        </span>
+      <div className="mb-6">
+        <div className="flex items-center justify-between mb-2.5">
+          <span className="text-[11px] font-bold uppercase tracking-wider text-[#A5A39D] block">
+            Common Scavenged Staples
+          </span>
+          <div className="relative w-36 sm:w-48">
+            <input
+              type="text"
+              value={filterQuery}
+              onChange={(e) => setFilterQuery(e.target.value)}
+              placeholder="Filter staples..."
+              className="w-full px-2.5 py-1 text-[11px] rounded-lg bg-[#202020] border border-white/[0.08] text-[#F5F2EB] placeholder:text-[#A5A39D]/40 focus:outline-none focus:border-[#F4D779]/50"
+            />
+          </div>
+        </div>
+
         <div className="flex flex-wrap gap-1.5 max-h-36 overflow-y-auto pr-1">
-          {catalog.map((item) => {
+          {filteredCatalog.map((item) => {
             const isSelected = selectedIngredients.some(
               (i) => i.toLowerCase() === item.toLowerCase()
             );
@@ -131,13 +125,13 @@ export const PantrySelector: React.FC<PantrySelectorProps> = ({
                     onAddIngredient(item);
                   }
                 }}
-                className={`px-2.5 py-1 rounded-xl text-xs font-medium border transition-all cursor-pointer ${
+                className={`px-3 py-1.5 rounded-xl text-xs font-medium border transition-all cursor-pointer ${
                   isSelected
-                    ? 'bg-amber-600 text-white border-amber-600 font-semibold'
-                    : 'bg-white hover:bg-amber-100/60 text-stone-700 border-stone-200'
+                    ? 'bg-[#F4D779] text-[#181818] border-[#F4D779] font-bold shadow-xs'
+                    : 'bg-[#202020] hover:bg-[#292929] text-[#A5A39D] hover:text-[#F5F2EB] border-white/[0.06]'
                 }`}
               >
-                {isSelected && <Check className="w-3 h-3 inline mr-1" />}
+                {isSelected && <Check className="w-3 h-3 inline mr-1 stroke-[3]" />}
                 {item}
               </button>
             );
@@ -145,30 +139,30 @@ export const PantrySelector: React.FC<PantrySelectorProps> = ({
         </div>
       </div>
 
-      {/* Action Button */}
-      <div className="flex items-center justify-between pt-3 border-t border-amber-100">
-        <div className="text-xs text-stone-500">
-          <span className="font-semibold text-stone-700">{selectedIngredients.length}</span> items ready for TabPFN scoring
+      {/* Primary Action Button */}
+      <div className="flex items-center justify-between pt-4 border-t border-white/[0.07]">
+        <div className="text-xs text-[#A5A39D]">
+          <span className="font-semibold text-[#F5F2EB]">{selectedIngredients.length}</span> items queued for TabPFN pairing
         </div>
 
         <button
           type="button"
           onClick={onGenerate}
           disabled={selectedIngredients.length === 0 || isLoading}
-          className={`px-6 py-3 rounded-2xl font-display font-bold text-sm flex items-center gap-2 transition-all shadow-md cursor-pointer ${
+          className={`px-7 py-3 rounded-2xl font-display font-bold text-sm flex items-center gap-2.5 transition-all shadow-md cursor-pointer ${
             selectedIngredients.length === 0 || isLoading
-              ? 'bg-stone-300 text-stone-500 cursor-not-allowed shadow-none'
-              : 'bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-700 hover:to-amber-600 text-white shadow-amber-600/20 active:scale-98'
+              ? 'bg-[#292929] text-[#A5A39D]/40 border border-white/[0.05] cursor-not-allowed shadow-none'
+              : 'bg-[#F4D779] hover:bg-[#E8CA6B] text-[#181818] shadow-[#F4D779]/10 active:scale-98'
           }`}
         >
           {isLoading ? (
             <>
-              <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-              <span>TabPFN Prior Labs + Gemma 2 Thinking...</span>
+              <div className="w-4 h-4 border-2 border-[#181818]/30 border-t-[#181818] rounded-full animate-spin" />
+              <span>Prior Labs TabPFN-3.5 + Gemma 2 Thinking...</span>
             </>
           ) : (
             <>
-              <Sparkles className="w-4 h-4" />
+              <Sparkles className="w-4 h-4 text-[#181818]" />
               <span>Synthesize Sloth Recipe</span>
             </>
           )}

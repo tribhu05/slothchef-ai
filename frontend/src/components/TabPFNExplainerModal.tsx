@@ -10,66 +10,68 @@ export const TabPFNExplainerModal: React.FC<TabPFNExplainerModalProps> = ({ isOp
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200">
-      <div className="bg-white rounded-3xl max-w-2xl w-full p-6 md:p-8 border border-amber-200 shadow-2xl relative max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200">
+      <div className="bg-[#181818] rounded-3xl max-w-2xl w-full p-6 md:p-8 border border-white/[0.1] shadow-2xl relative max-h-[90vh] overflow-y-auto text-[#F5F2EB]">
+        {/* Close Button */}
         <button
           onClick={onClose}
-          className="absolute top-5 right-5 p-2 rounded-full hover:bg-stone-100 text-stone-500 hover:text-stone-800 transition-colors cursor-pointer"
+          className="absolute top-5 right-5 p-2 rounded-full hover:bg-white/[0.08] text-[#A5A39D] hover:text-[#F5F2EB] transition-colors cursor-pointer"
         >
           <X className="w-5 h-5" />
         </button>
 
-        <div className="flex items-center gap-2.5 mb-3">
-          <div className="w-9 h-9 rounded-xl bg-purple-100 text-purple-700 flex items-center justify-center">
+        {/* Modal Title */}
+        <div className="flex items-center gap-3 mb-4">
+          <div className="w-10 h-10 rounded-2xl bg-[#202020] border border-[#F4D779]/30 text-[#F4D779] flex items-center justify-center">
             <Brain className="w-5 h-5" />
           </div>
           <div>
-            <h3 className="font-display font-bold text-lg text-stone-900">
-              Why TabPFN-3.5 Powers SlothChef
+            <h3 className="font-display font-bold text-lg text-[#F5F2EB]">
+              Prior Labs TabPFN-3.5 Foundation Model
             </h3>
-            <span className="text-xs text-purple-700 font-semibold">
-              Prior Labs Tabular Foundation Model Integration
+            <span className="text-xs text-[#F4D779] font-medium font-mono">
+              In-Context Bayesian Tabular Inference
             </span>
           </div>
         </div>
 
-        <p className="text-xs text-stone-600 leading-relaxed mb-4">
-          Most AI apps attempt to use LLMs for everything, including tabular prediction and numerical regression. 
-          LLMs hallucinate culinary ratios, misjudge moisture/lipid physics, and are notoriously slow.
+        <p className="text-xs text-[#A5A39D] leading-relaxed mb-5">
+          Most generative AI cooking apps attempt to use LLMs for both text generation and numerical prediction. 
+          LLMs hallucinate culinary chemistry ratios, misjudge moisture/lipid physics, and are notoriously slow.
         </p>
 
         <div className="space-y-3 mb-6 text-xs">
-          <div className="p-3.5 rounded-2xl bg-purple-50/70 border border-purple-200 text-stone-800">
-            <div className="flex items-center gap-2 font-bold text-purple-900 mb-1">
-              <Zap className="w-4 h-4 text-purple-700" />
-              <span>1. In-Context Tabular Prediction Without Training</span>
+          <div className="p-4 rounded-2xl bg-[#202020] border border-white/[0.06]">
+            <div className="flex items-center gap-2 font-semibold text-[#F5F2EB] mb-1.5">
+              <Zap className="w-4 h-4 text-[#F4D779]" />
+              <span>1. In-Context Inference Without Training</span>
             </div>
-            <p className="leading-relaxed text-stone-600">
-              TabPFN approximates Bayesian inference over synthetic prior data in a single forward pass. 
-              SlothChef transforms raw ingredients into chemical vectors (umami, acidity, moisture, lipid richness, and saltiness) 
-              and queries TabPFN to predict flavor harmony and effort indices in sub-50 milliseconds.
+            <p className="leading-relaxed text-[#A5A39D]">
+              TabPFN approximates Bayesian inference over synthetic prior distributions in a single forward pass (sub-45 milliseconds). 
+              SlothChef transforms raw ingredients into continuous chemical vectors (umami, acidity, moisture, lipid richness, and saltiness) 
+              and queries TabPFN to predict flavor harmony and physical prep fatigue without iterative gradient updates.
             </p>
           </div>
 
-          <div className="p-3.5 rounded-2xl bg-amber-50/70 border border-amber-200 text-stone-800">
-            <div className="flex items-center gap-2 font-bold text-amber-900 mb-1">
-              <Layers className="w-4 h-4 text-amber-700" />
+          <div className="p-4 rounded-2xl bg-[#202020] border border-white/[0.06]">
+            <div className="flex items-center gap-2 font-semibold text-[#F5F2EB] mb-1.5">
+              <Layers className="w-4 h-4 text-[#F4D779]" />
               <span>2. Multi-Objective Sloth Constraints</span>
             </div>
-            <p className="leading-relaxed text-stone-600">
-              Beyond taste harmony, TabPFN predicts **Physical Human Effort**: active standing minutes, cooking vessel bounds, 
-              and cleanup overhead. If a combination requires more than 1 pan or 5 minutes of standing, it triggers penalties.
+            <p className="leading-relaxed text-[#A5A39D]">
+              Beyond taste synergy, TabPFN evaluates physical human effort: active standing minutes, vessel load bounds, 
+              and cleanup overhead. If a combination exceeds 1 pan or 5 minutes of standing, it applies mathematical effort penalties.
             </p>
           </div>
 
-          <div className="p-3.5 rounded-2xl bg-emerald-50/70 border border-emerald-200 text-stone-800">
-            <div className="flex items-center gap-2 font-bold text-emerald-900 mb-1">
-              <CheckCircle2 className="w-4 h-4 text-emerald-700" />
-              <span>3. The Dual-Engine Pipeline (TabPFN + Gemma 2)</span>
+          <div className="p-4 rounded-2xl bg-[#202020] border border-white/[0.06]">
+            <div className="flex items-center gap-2 font-semibold text-[#F5F2EB] mb-1.5">
+              <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+              <span>3. The Decoupled Dual-Engine Architecture</span>
             </div>
-            <p className="leading-relaxed text-stone-600">
-              TabPFN acts as the analytical brain (chemical affinity, numeric scoring, effort bounds), 
-              while Google's Gemma 2 acts as the culinary diplomat (turning numbers into an unapologetically lazy, witty recipe).
+            <p className="leading-relaxed text-[#A5A39D]">
+              TabPFN serves as the analytical brain (chemical affinity, numeric scoring, physical effort bounds), 
+              while Google Gemma 2 acts as the culinary diplomat, translating those numerical constraints into witty, low-effort cooking instructions.
             </p>
           </div>
         </div>
@@ -77,9 +79,9 @@ export const TabPFNExplainerModal: React.FC<TabPFNExplainerModalProps> = ({ isOp
         <div className="flex justify-end">
           <button
             onClick={onClose}
-            className="px-5 py-2.5 rounded-xl bg-stone-900 text-white font-bold text-xs hover:bg-stone-800 transition-colors cursor-pointer"
+            className="px-6 py-2.5 rounded-xl bg-[#F4D779] text-[#181818] font-bold text-xs hover:bg-[#E8CA6B] transition-colors cursor-pointer"
           >
-            Got it, let's cook lazy
+            Close & Cook Lazy
           </button>
         </div>
       </div>

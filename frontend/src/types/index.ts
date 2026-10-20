@@ -16,6 +16,8 @@ export interface SlothRecipe {
   subtitle: string;
   tagline: string;
   sloth_efficiency: string;
+  sloth_score?: number;
+  image_url?: string;
   vessel_type: string;
   utensil: string;
   dishes_to_wash: number;
@@ -38,4 +40,13 @@ export interface PresetDisaster {
   ingredients: string[];
   vessel_preference: string;
   target_time: string;
+  image_url?: string;
+}
+
+export interface SlothContractState {
+  maxActiveMinutes: number;
+  maxCookwareCount: number;
+  maxUtensilCount: number;
+  microwaveOnly: boolean;
+  minimalChopping: boolean;
 }

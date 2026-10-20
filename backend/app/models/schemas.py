@@ -25,6 +25,11 @@ class RecipeRequest(BaseModel):
     ingredients: List[str] = Field(..., min_length=1, description="List of raw ingredients in the fridge/pantry")
     vessel_preference: Optional[str] = Field("One Skillet", description="Preferred cooking vessel: One Skillet, Microwave Bowl, Single Pot")
     sloth_intensity: Optional[str] = Field("Maximum", description="Sloth mode: Maximum (refuse to chop), Balanced, Cozy")
+    max_active_minutes: Optional[int] = Field(5, ge=1, le=15, description="Maximum active standing minutes")
+    max_cookware_count: Optional[int] = Field(1, ge=1, le=2, description="Maximum cookware count")
+    max_utensil_count: Optional[int] = Field(1, ge=1, le=2, description="Maximum utensil count")
+    microwave_only: Optional[bool] = Field(False, description="Enforce microwave-only cooking")
+    minimal_chopping: Optional[bool] = Field(True, description="Strict zero/minimal knife prep")
 
 class SlothRecipe(BaseModel):
     id: str
@@ -32,6 +37,8 @@ class SlothRecipe(BaseModel):
     subtitle: str
     tagline: str
     sloth_efficiency: str
+    sloth_score: int = 96
+    image_url: Optional[str] = None
     vessel_type: str
     utensil: str = "1 Fork"
     dishes_to_wash: int = 1
@@ -44,3 +51,4 @@ class SlothRecipe(BaseModel):
     cleanup_audit: str
     open_weights_rationale: str
     tabpfn_evidence: TabPFNPrediction
+

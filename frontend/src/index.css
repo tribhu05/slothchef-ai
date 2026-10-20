@@ -1,26 +1,44 @@
 @import "tailwindcss";
 
+:root {
+  --bg-main: #242424;
+  --surface-primary: #181818;
+  --surface-card: #202020;
+  --surface-secondary: #292929;
+  --text-primary: #F5F2EB;
+  --text-secondary: #A5A39D;
+  --accent-gold: #F4D779;
+  --accent-gold-hover: #E8CA6B;
+  --border-subtle: rgba(255, 255, 255, 0.07);
+  --border-card: rgba(255, 255, 255, 0.09);
+}
+
 @layer base {
   body {
+    background-color: var(--bg-main);
+    color: var(--text-primary);
     font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
+  
   h1, h2, h3, .font-display {
     font-family: 'Space Grotesk', system-ui, sans-serif;
   }
 }
 
-/* Custom Sloth Scrollbar */
+/* Subtle Dark Scrollbar */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #fbf8f3;
+  background: #181818;
 }
 ::-webkit-scrollbar-thumb {
-  background: #d6c7b2;
+  background: #333333;
   border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #b8a68e;
+  background: #4a4a4a;
 }

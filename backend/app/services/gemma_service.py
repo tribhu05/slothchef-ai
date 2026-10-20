@@ -161,6 +161,23 @@ class GemmaRecipeSynthesizer:
                 f"Add remaining ingredients ({', '.join(ing_clean[2:]) if len(ing_clean) > 2 else 'seasoning'}), stir for 1 minute, turn off heat, and serve."
             ]
             cleanup = f"1 {vessel} and 1 fork to wash. Done in {tabpfn.active_standing_minutes} minutes."
+            img = "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=1200&q=80"
+
+        # Determine image_url
+        if any("ramen" in x for x in lower) and any("peanut" in x for x in lower):
+            img = "https://images.unsplash.com/photo-1569718212165-3a8278d5f624?auto=format&fit=crop&w=1200&q=80"
+        elif any("chip" in x for x in lower) or any("salsa" in x for x in lower):
+            img = "https://images.unsplash.com/photo-1513456852971-30c0b8199d4d?auto=format&fit=crop&w=1200&q=80"
+        elif any("chickpea" in x for x in lower) and any("curry" in x for x in lower):
+            img = "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=1200&q=80"
+        elif any("rice" in x for x in lower) and any("kimchi" in x for x in lower):
+            img = "https://images.unsplash.com/photo-1590301157890-4810ed352733?auto=format&fit=crop&w=1200&q=80"
+        elif any("tuna" in x for x in lower):
+            img = "https://images.unsplash.com/photo-1546069901-d8a1c97a5a8e?auto=format&fit=crop&w=1200&q=80"
+        elif any("carbonara" in x for x in lower) or (any("egg" in x for x in lower) and any("cheese" in x for x in lower)):
+            img = "https://images.unsplash.com/photo-1612874742237-6526221588e3?auto=format&fit=crop&w=1200&q=80"
+        else:
+            img = "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=1200&q=80"
 
         return {
             "title": title,
@@ -171,7 +188,8 @@ class GemmaRecipeSynthesizer:
             "utensil": "1 Fork",
             "sloth_shortcuts": shortcuts,
             "steps": steps,
-            "cleanup_audit": cleanup
+            "cleanup_audit": cleanup,
+            "image_url": img
         }
 
     async def generate_recipe(
@@ -179,14 +197,20 @@ class GemmaRecipeSynthesizer:
         ingredients: List[str],
         tabpfn: TabPFNPrediction,
         vessel: str = "One Skillet",
-        sloth_intensity: str = "Maximum"
+        sloth_intensity: str = "Maximum",
+        microwave_only: bool = False,
+        minimal_chopping: bool = True,
+        max_active_minutes: int = 5
     ) -> SlothRecipe:
+        effective_vessel = "Microwave Safe Bowl" if microwave_only else vessel
         prompt = (
             f"Ingredients available: {', '.join(ingredients)}\n"
-            f"Vessel preference: {vessel}\n"
+            f"Vessel preference: {effective_vessel}\n"
             f"Sloth intensity: {sloth_intensity}\n"
+            f"Microwave only: {microwave_only}\n"
+            f"Minimal chopping: {minimal_chopping}\n"
+            f"Max active standing minutes: {max_active_minutes}\n"
             f"TabPFN Harmony Score: {tabpfn.harmony_score}/100\n"
-            f"Active Standing Time Limit: {tabpfn.active_standing_minutes} minutes\n"
             f"Generate an ultra-lazy, one-pan recipe."
         )
 
@@ -195,7 +219,7 @@ class GemmaRecipeSynthesizer:
         
         # 2. Fallback to dynamic offline generator
         if not gen_data:
-            gen_data = self._synthesize_dynamic_offline(ingredients, tabpfn, vessel)
+            gen_data = self._synthesize_dynamic_offline(ingredients, tabpfn, effective_vessel)
 
         recipe_id = f"sloth-{uuid.uuid4().hex[:8]}"
         
@@ -205,22 +229,27 @@ class GemmaRecipeSynthesizer:
             "zero subscription fees, and 100% offline autonomy in campers, cabins, or power outages."
         )
 
+        active_time = min(max_active_minutes, tabpfn.active_standing_minutes)
+        sloth_score = max(75, min(99, int(100 - (active_time * 2) - 1)))
+
         return SlothRecipe(
             id=recipe_id,
             title=gen_data.get("title", "The Sloth Scramble"),
             subtitle=gen_data.get("subtitle", "Low-effort culinary survival"),
             tagline=gen_data.get("tagline", "Less dishes, more resting."),
-            sloth_efficiency=gen_data.get("sloth_efficiency", "95% Energy Conserved"),
-            vessel_type=vessel,
+            sloth_efficiency=gen_data.get("sloth_efficiency", f"{sloth_score}% Energy Conserved"),
+            sloth_score=sloth_score,
+            image_url=gen_data.get("image_url", "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=1200&q=80"),
+            vessel_type=effective_vessel,
             utensil=gen_data.get("utensil", "1 Fork"),
             dishes_to_wash=1,
-            active_standing_minutes=tabpfn.active_standing_minutes,
+            active_standing_minutes=active_time,
             total_minutes=tabpfn.total_minutes,
             harmony_score=tabpfn.harmony_score,
             ingredients_used=ingredients,
             sloth_shortcuts=gen_data.get("sloth_shortcuts", ["Crush with a mug; eat from the pan."]),
             steps=gen_data.get("steps", ["Heat pan.", "Dump ingredients.", "Eat."]),
-            cleanup_audit=gen_data.get("cleanup_audit", "1 pan and 1 fork to wash."),
+            cleanup_audit=gen_data.get("cleanup_audit", f"1 {effective_vessel} and 1 fork to wash."),
             open_weights_rationale=rationale,
             tabpfn_evidence=tabpfn
         )
