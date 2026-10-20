@@ -17,9 +17,11 @@ import {
   ArrowRight, 
   ArrowLeft,
   CheckCircle2,
-  Check
+  Check,
+  BellRing
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
+import { playTimerDoneChime, playStepCheckSound } from '../utils/audio';
 
 interface RecipeCardProps {
   recipe: SlothRecipe;
@@ -44,6 +46,7 @@ export const RecipeCard: React.FC<RecipeCardProps> = ({
   // Interactive Timer
   const [timerSeconds, setTimerSeconds] = useState(recipe.active_standing_minutes * 60 || 180);
   const [timerActive, setTimerActive] = useState(false);
+  const [timerFinished, setTimerFinished] = useState(false);
 
   // Collapsible TabPFN Telemetry Drawer
   const [isTelemetryExpanded, setIsTelemetryExpanded] = useState(false);
@@ -54,22 +57,36 @@ export const RecipeCard: React.FC<RecipeCardProps> = ({
     setCurrentCookStep(0);
     setTimerSeconds(recipe.active_standing_minutes * 60 || 180);
     setTimerActive(false);
+    setTimerFinished(false);
   }, [recipe.id]);
 
-  // Timer countdown
+  // Timer countdown with Web Audio Chime on 0:00
   useEffect(() => {
     let interval: any = null;
     if (timerActive && timerSeconds > 0) {
       interval = setInterval(() => {
-        setTimerSeconds((prev) => prev - 1);
+        setTimerSeconds((prev) => {
+          if (prev <= 1) {
+            setTimerActive(false);
+            setTimerFinished(true);
+            playTimerDoneChime();
+            confetti({
+              particleCount: 75,
+              spread: 60,
+              origin: { y: 0.6 },
+              colors: ['#F4D779', '#10b981', '#ffffff']
+            });
+            return 0;
+          }
+          return prev - 1;
+        });
       }, 1000);
-    } else if (timerSeconds === 0) {
-      setTimerActive(false);
     }
     return () => clearInterval(interval);
   }, [timerActive, timerSeconds]);
 
   const toggleStep = (index: number) => {
+    playStepCheckSound();
     if (completedSteps.includes(index)) {
       setCompletedSteps(completedSteps.filter((i) => i !== index));
     } else {
@@ -142,17 +159,40 @@ export const RecipeCard: React.FC<RecipeCardProps> = ({
           </button>
         </div>
 
-        {/* Quick Actions (Timer & Copy) */}
+        {/* Quick Actions (Timer with Presets & Copy) */}
         <div className="flex items-center gap-2">
-          {/* Active Timer Pill */}
-          <div className="flex items-center gap-2 bg-[#181818] px-3 py-1.5 rounded-xl border border-white/[0.08] text-xs">
-            <Timer className="w-3.5 h-3.5 text-[#F4D779]" />
-            <span className="font-mono font-bold text-[#F5F2EB]">
+          {/* Active Timer Pill with 1m, 3m, 5m presets */}
+          <div className="flex items-center gap-1.5 bg-[#181818] p-1.5 rounded-xl border border-white/[0.08] text-xs">
+            <Timer className="w-3.5 h-3.5 text-[#F4D779] ml-1" />
+            <span className="font-mono font-bold text-[#F5F2EB] mr-1">
               {formatTimer(timerSeconds)}
             </span>
+            <div className="hidden sm:flex items-center gap-1 border-l border-white/[0.08] pl-1.5">
+              {[1, 3, 5].map((m) => (
+                <button
+                  key={m}
+                  onClick={() => {
+                    setTimerSeconds(m * 60);
+                    setTimerActive(false);
+                    setTimerFinished(false);
+                  }}
+                  className="px-1.5 py-0.5 rounded text-[10px] bg-[#242424] hover:bg-[#292929] text-[#A5A39D] hover:text-[#F4D779] font-mono cursor-pointer"
+                  title={`Set timer to ${m} min`}
+                >
+                  {m}m
+                </button>
+              ))}
+            </div>
             <button
-              onClick={() => setTimerActive(!timerActive)}
-              className="text-[#F4D779] hover:text-[#E8CA6B] font-semibold text-[11px] underline cursor-pointer ml-1"
+              onClick={() => {
+                if (timerSeconds === 0) {
+                  setTimerSeconds(recipe.active_standing_minutes * 60 || 180);
+                  setTimerFinished(false);
+                } else {
+                  setTimerActive(!timerActive);
+                }
+              }}
+              className="text-[#F4D779] hover:text-[#E8CA6B] font-semibold text-[11px] underline cursor-pointer ml-1 pr-1"
             >
               {timerActive ? 'Pause' : timerSeconds === 0 ? 'Reset' : 'Start'}
             </button>
@@ -178,6 +218,25 @@ export const RecipeCard: React.FC<RecipeCardProps> = ({
           </button>
         </div>
       </div>
+
+      {/* Timer Finished Alert Banner with Web Audio Ding */}
+      {timerFinished && (
+        <div className="bg-[#F4D779] text-[#181818] px-4 py-2.5 flex items-center justify-between text-xs font-bold animate-in slide-in-from-top duration-300">
+          <div className="flex items-center gap-2">
+            <BellRing className="w-4 h-4 animate-bounce" />
+            <span>⏰ Ding! 1-Pan Survival Meal Ready! No pans were harmed in this cook.</span>
+          </div>
+          <button
+            onClick={() => {
+              setTimerFinished(false);
+              setTimerSeconds(recipe.active_standing_minutes * 60 || 180);
+            }}
+            className="px-2.5 py-1 rounded-lg bg-[#181818] text-[#F4D779] text-[11px] font-extrabold hover:bg-black transition-colors cursor-pointer"
+          >
+            Reset Timer
+          </button>
+        </div>
+      )}
 
       {/* VIEW 1: RECIPE OVERVIEW */}
       {viewMode === 'overview' && (
@@ -206,7 +265,7 @@ export const RecipeCard: React.FC<RecipeCardProps> = ({
               </div>
 
               <span className="text-xs font-mono font-medium px-2.5 py-1 rounded-full bg-emerald-500/20 backdrop-blur-md border border-emerald-500/30 text-emerald-300">
-                1-Pan Bound Guaranteed
+                🍳 1 Pan • 🍴 1 Utensil • 🔪 0 Knives
               </span>
             </div>
 

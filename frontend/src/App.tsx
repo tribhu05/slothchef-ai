@@ -168,6 +168,20 @@ export const App: React.FC = () => {
     }
   };
 
+  // Global Keyboard Shortcut: Ctrl + Enter / Cmd + Enter to synthesize
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+        e.preventDefault();
+        if (selectedIngredients.length > 0 && !isLoading) {
+          handleGenerate();
+        }
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [selectedIngredients, vesselPreference, contract, isLoading]);
+
   const handleSelectPreset = (preset: PresetDisaster) => {
     setSelectedPresetId(preset.id);
     setSelectedIngredients(preset.ingredients);

@@ -479,6 +479,9 @@ export const KitchenStudio: React.FC<KitchenStudioProps> = ({
             <>
               <Sparkles className="w-4 h-4 text-[#181818]" />
               <span>Synthesize Sloth Meal (1 Pan)</span>
+              <kbd className="hidden sm:inline-flex items-center ml-1 px-2 py-0.5 rounded-lg bg-black/15 text-[#181818] text-[10px] font-mono font-bold border border-black/10">
+                Ctrl + ↵
+              </kbd>
             </>
           )}
         </button>
