@@ -33,9 +33,10 @@ EXPOSE 8000
 ENV ENVIRONMENT=production
 ENV OLLAMA_BASE_URL=http://localhost:11434
 ENV GEMMA_MODEL=gemma2:2b
+ENV PYTHONPATH=/app/backend
 
 # Healthcheck
 HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
   CMD sh -c "curl -f http://localhost:${PORT:-8000}/api/health || exit 1"
 
-CMD ["sh", "-c", "PYTHONPATH=. uvicorn backend.app.main:app --host 0.0.0.0 --port ${PORT:-8000}"]
+CMD ["sh", "-c", "uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}"]

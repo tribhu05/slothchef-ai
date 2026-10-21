@@ -19,6 +19,12 @@
 
 [Live Hosted Demo](https://slothchef-ai.onrender.com) • [DEV.to Submission Article](ARTICLE_DRAFT.md) • [Technical Evidence](docs/technical-evidence-report.md) • [TabPFN Benchmark](docs/benchmark_report.md)
 
+<p align="center">
+  <a href="https://render.com/deploy?repo=https://github.com/tribhu05/slothchef-ai">
+    <img src="https://render.com/images/deploy-to-render-button.svg" alt="Deploy to Render" />
+  </a>
+</p>
+
 </div>
 
 ---
@@ -128,6 +134,24 @@ cd ..
 python -m uvicorn backend.app.main:app --host 127.0.0.1 --port 8000 --reload
 ```
 Open **[http://localhost:8000](http://localhost:8000)** in your browser!
+
+---
+
+## ☁️ Deploying to Render
+
+### Method 1: 1-Click Blueprint (Recommended)
+1. Fork or push this repository to your GitHub account (`https://github.com/tribhu05/slothchef-ai`).
+2. Click the **[Deploy to Render](https://render.com/deploy?repo=https://github.com/tribhu05/slothchef-ai)** button or go to [dashboard.render.com](https://dashboard.render.com) -> **New +** -> **Blueprint**.
+3. Connect your repository. Render will automatically read [`render.yaml`](render.yaml) and configure the Docker web service, health checks (`/api/health`), and environment variables.
+4. Click **Apply**.
+
+### Method 2: Manual Web Service
+1. On Render, select **New +** -> **Web Service** -> connect your repository.
+2. Select **Docker** environment:
+   * **Dockerfile Path**: `./Dockerfile`
+   * **Docker Context**: `.`
+   * **Health Check Path**: `/api/health`
+3. Click **Create Web Service**. Render builds the React frontend, mounts the FastAPI backend, and publishes the live URL!
 
 ---
 
