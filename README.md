@@ -21,7 +21,7 @@
 
 <br/>
 
-[🚀 Live Hosted Demo](https://slothchef-ai.onrender.com) • [📝 DEV.to Submission Article](ARTICLE_DRAFT.md) • [🎬 Video Production Suite](video_production/) • [📊 Benchmark Report](docs/benchmark_report.md) • [🧪 Test Evidence](docs/technical-evidence-report.md)
+[🚀 Live Hosted Demo](https://slothchef-ai.onrender.com) • [📝 DEV.to Submission Article](ARTICLE_DRAFT.md) • [📊 Benchmark Report](docs/benchmark_report.md) • [🧪 Test Evidence](docs/technical-evidence-report.md)
 
 <p align="center">
   <a href="https://render.com/deploy?repo=https://github.com/tribhu05/slothchef-ai">
