@@ -1,0 +1,30 @@
+[
+  {
+    "id": "scene1",
+    "text": "Production is broken. Dinner shouldn't be. You've spent eight hours debugging, your brain is running on fumes, and your fridge has four ingredients that don't look like a meal. The last thing you need is a recipe that demands another hour of work."
+  },
+  {
+    "id": "scene2",
+    "text": "Meet SlothChef: an extreme low-effort cooking companion built for people who want dinner, not a second project. Give it what you've got. The Sloth Contract enforces strictly one cooking vessel, zero cutting boards, and under five minutes on your feet."
+  },
+  {
+    "id": "scene3",
+    "text": "Let's test the post-deploy pantry: instant ramen, peanut butter, soy sauce, and sriracha. SlothChef turns those ingredients into a practical starting point, with no imaginary pantry and no elaborate workflow. It synthesizes the Midnight Dan-Dan Rescue: one skillet, one fork, and three minutes of active cooking. With radical shortcuts: crush garlic flat with a coffee mug, tear greens with bare hands. And Cook-Along mode reads each step aloud with an audible timer."
+  },
+  {
+    "id": "scene4",
+    "text": "Behind the interface is a decoupled dual-AI pipeline. First, Prior Labs' TabPFN tabular foundation model evaluates continuous chemical flavor vectors: umami, salt, acidity, and lipids, in a single Bayesian forward pass under 45 milliseconds. It quantifies synergy before generating text. Then, Google's open-weight Gemma 2 SLM translates those exact bounds into sequential, zero-friction cooking instructions."
+  },
+  {
+    "id": "scene5",
+    "text": "SlothChef is deployed live on Render via a multi-stage Docker container with automated health monitoring. Why does open innovation matter here? Because midnight pantry habits are intensely personal. Running open-weight models locally keeps private fridge telemetry on your device. It works 100% offline with zero token anxiety and zero cloud lock-in."
+  },
+  {
+    "id": "scene6",
+    "text": "The result? A steaming bowl of rich, spicy Dan-Dan noodles. Thirty-eight minutes reclaimed, six fewer dishes to wash, and an edible victory when energy was at absolute zero. Because conservation of energy isn't laziness: it's the supreme evolutionary virtue."
+  },
+  {
+    "id": "scene7",
+    "text": "Production is broken. Dinner shouldn't be. Try SlothChef on Render, or fork it on GitHub."
+  }
+]

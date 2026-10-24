@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SlothChef — Interactive Demo Video Studio</title>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: #121212;
+      color: #F5F2EB;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+    }
+    .cinema-frame {
+      width: 100%;
+      max-width: 1100px;
+      aspect-ratio: 16 / 9;
+      background: #181818;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 28px;
+      box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.8), 0 0 40px rgba(244, 215, 121, 0.05);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    .gold-glow {
+      text-shadow: 0 0 20px rgba(244, 215, 121, 0.4);
+    }
+    .badge {
+      font-family: 'Space Grotesk', monospace;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 4px 12px;
+      border-radius: 9999px;
+    }
+    .scene-content {
+      flex: 1;
+      padding: 3rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      animation: fadeIn 0.4s ease-out;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .teleprompter {
+      background: rgba(20, 20, 20, 0.95);
+      backdrop-filter: blur(12px);
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 1rem 2rem;
+      min-height: 80px;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .control-btn {
+      background: #242424;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: #F5F2EB;
+      font-weight: 600;
+      padding: 8px 16px;
+      border-radius: 12px;
+      cursor: pointer;
+      font-size: 13px;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .control-btn:hover {
+      background: #2c2c2c;
+      border-color: rgba(244, 215, 121, 0.4);
+      color: #F4D779;
+    }
+    .control-btn.primary {
+      background: #F4D779;
+      color: #181818;
+      border-color: #F4D779;
+      font-weight: 700;
+    }
+    .control-btn.primary:hover {
+      background: #e5c86c;
+    }
+    .progress-bar-bg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 4px;
+      background: rgba(255, 255, 255, 0.05);
+      z-index: 50;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      background: #F4D779;
+      transition: width 0.3s linear;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Bar -->
+  <div style="width: 100%; max-width: 1100px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+    <div style="display: flex; align-items: center; gap: 10px;">
+      <span style="font-size: 24px;">🦥</span>
+      <div>
+        <h1 style="font-size: 16px; font-weight: 700; letter-spacing: -0.02em;">SlothChef Demo Video Studio</h1>
+        <p style="font-size: 12px; color: #A5A39D;">Interactive Audio-Visual Presentation • DEV Hacktoberfest Week 3</p>
+      </div>
+    </div>
+    <div style="display: flex; gap: 8px;">
+      <a href="https://slothchef-ai.onrender.com" target="_blank" class="control-btn" style="text-decoration: none;">
+        🌐 Live on Render
+      </a>
+      <a href="https://github.com/tribhu05/slothchef-ai" target="_blank" class="control-btn" style="text-decoration: none;">
+        💻 GitHub Repo
+      </a>
+    </div>
+  </div>
+
+  <!-- Cinema Player Frame -->
+  <div class="cinema-frame" id="cinemaFrame">
+    <!-- Top Progress Bar -->
+    <div class="progress-bar-bg">
+      <div class="progress-bar-fill" id="progressBar" style="width: 16%;"></div>
+    </div>
+
+    <!-- Frame Header -->
+    <div style="padding: 1.25rem 2rem; border-bottom: 1px solid rgba(255, 255, 255, 0.06); display: flex; justify-content: space-between; align-items: center; background: rgba(24, 24, 24, 0.7);">
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <span class="badge" style="background: rgba(244, 215, 121, 0.15); color: #F4D779; border: 1px solid rgba(244, 215, 121, 0.3);" id="sceneBadge">
+          SCENE 1 OF 6
+        </span>
+        <span style="font-size: 13px; color: #A5A39D;" id="sceneTag">The Midnight Crisis</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 10px; font-size: 12px; font-family: monospace;">
+        <span style="color: #10b981; display: inline-flex; align-items: center; gap: 5px;">
+          <span style="width: 8px; height: 8px; background: #10b981; border-radius: 50%; display: inline-block;"></span>
+          LIVE RENDER
+        </span>
+        <span style="color: #666;">•</span>
+        <span style="color: #A5A39D;" id="timeCounter">00:00 / 02:30</span>
+      </div>
+    </div>
+
+    <!-- Dynamic Scene Stage -->
+    <div class="scene-content" id="sceneContent">
+      <!-- Content populated by JS -->
+    </div>
+
+    <!-- Synchronized Teleprompter & Subtitles -->
+    <div class="teleprompter">
+      <div style="font-size: 20px; color: #F4D779;">🎙️</div>
+      <div style="flex: 1;">
+        <div style="font-size: 11px; text-transform: uppercase; color: #A5A39D; letter-spacing: 0.05em; margin-bottom: 2px;">
+          Voiceover Narration
+        </div>
+        <p id="voiceoverText" style="font-size: 14px; font-weight: 500; color: #F5F2EB; line-height: 1.4;">
+          Click "Play Demo" to start the automated walkthrough with voiceover and audio chime.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Player Controls Bar -->
+  <div style="width: 100%; max-width: 1100px; display: flex; justify-content: space-between; align-items: center; margin-top: 1rem; flex-wrap: wrap; gap: 10px;">
+    <div style="display: flex; gap: 8px; align-items: center;">
+      <button class="control-btn primary" id="playBtn" onclick="togglePlay()">
+        ▶ Play Demo
+      </button>
+      <button class="control-btn" onclick="prevScene()">
+        ⏮ Prev
+      </button>
+      <button class="control-btn" onclick="nextScene()">
+        Next ⏭
+      </button>
+      <button class="control-btn" onclick="restartDemo()">
+        ↺ Restart
+      </button>
+    </div>
+
+    <div style="display: flex; gap: 8px; align-items: center;">
+      <button class="control-btn" id="voiceToggle" onclick="toggleVoice()">
+        🔊 Voice: ON
+      </button>
+      <button class="control-btn" id="musicToggle" onclick="toggleMusic()">
+        🎵 Lo-Fi Music: ON
+      </button>
+      <button class="control-btn" onclick="toggleFullscreen()">
+        ⛶ Fullscreen
+      </button>
+    </div>
+  </div>
+
+  <script>
+    const SCENES = [
+      {
+        badge: "SCENE 1 OF 6",
+        tag: "The Midnight Crisis (The Hook)",
+        headline: "9:30 PM. 8 Hours Debugging. 4 Sad Ingredients.",
+        quote: "Cooking should take less effort than deciding what to eat.",
+        bullets: [
+          "Fridge Scavenge: 1 Ramen packet, 2 tbsp Peanut Butter, Sriracha, Soy Sauce",
+          "The Food Blog Scam: 45 minutes caramelizing onions, 6 dirty bowls, 3 pans",
+          "The Human Tax: Sore feet, exhaustion, and a sink overflowing with regret"
+        ],
+        sideHighlight: "THE PROBLEM:<br><span style='color: #ef4444;'>Culinary Perfectionism</span>",
+        voice: "It is 9:30 PM on a Tuesday. You just spent eight grueling hours tracking down a race condition in production. Your brain is fried, your feet hurt, and you open your fridge to find a packet of ramen, peanut butter, and sriracha. Every online food blog gives you a 3,000-word memoir, then demands you dirty 6 bowls and 3 pans. Cooking didn't fail developers. Culinary perfectionism did.",
+        duration: 22
+      },
+      {
+        badge: "SCENE 2 OF 6",
+        tag: "The Sloth Philosophy (Asymptotic Bounds)",
+        headline: "Treating Kitchen Exertion as an Algorithmic Complexity Problem",
+        quote: "Conservation of energy is the supreme evolutionary virtue.",
+        bullets: [
+          "Active Standing Bound: O(< 5 minutes on your feet)",
+          "Cookware Space Bound: Strictly 1 vessel (skillet, pot, or microwave bowl)",
+          "Prep & Knife Bound: 1 fork (eat directly from pan) & zero cutting boards"
+        ],
+        sideHighlight: "SLOTH CONTRACT:<br><span style='color: #F4D779;'>Strict 1-Pan Bounds</span>",
+        voice: "For DEV Hacktoberfest Week 3—celebrating International Sloth Day—we built SlothChef: the extreme low-effort survival engine that treats kitchen exertion like strict algorithmic complexity. Hard bounds of strictly under 5 minutes of standing, exactly one cooking pan, and zero cutting boards to wash.",
+        duration: 20
+      },
+      {
+        badge: "SCENE 3 OF 6",
+        tag: "Live Demo (The Kitchen Workbench)",
+        headline: "Post-Deploy Desperation ➔ Midnight Dan-Dan Rescue",
+        quote: "Crush garlic flat with a coffee mug. Life is too short to dice.",
+        bullets: [
+          "1-Click Desperation Menu: Tap preset to instantly load and synthesize",
+          "Ingredients in this Pan: Explicitly tags core staples vs optional garnishes",
+          "Cook-Along Focus Mode: Hands-free voice readouts & Web Audio microwave bell ding"
+        ],
+        sideHighlight: "RECIPE RESULT:<br><span style='color: #10b981;'>Verified 1-Pan Image</span>",
+        voice: "On the left is the Kitchen Studio. Click a disaster preset like Post-Deploy Desperation. The recipe card instantly displays a verified high-resolution photo of the actual dish—no random salads for oatmeal! It tells you to simmer ramen directly in the sauce water to save a colander, and crush garlic with a mug. Step onto the stove, tap Cook-Along Mode, and listen hands-free.",
+        action: "ding",
+        duration: 24
+      },
+      {
+        badge: "SCENE 4 OF 6",
+        tag: "Under the Hood: Prior Labs TabPFN-3.5",
+        headline: "Chemical Flavor Vectors & In-Context Bayesian Inference",
+        quote: "Single forward pass (< 45ms) over continuous sensory feature matrices.",
+        bullets: [
+          "Feature Extraction: Umami (88%), Richness (85%), Acidity (74%), Salt (92%)",
+          "Biochemical Synergy: Sriracha acetic acid cuts heavy peanut butter fats",
+          "Physical Fatigue Model: Accurately predicts active standing minutes"
+        ],
+        sideHighlight: "PARTNER TECH:<br><span style='color: #7c3aed;'>Prior Labs TabPFN</span>",
+        voice: "Under the hood, SlothChef pairs two open-weight AI architectures. First: Prior Labs' TabPFN-3.5 tabular foundation model. Instead of blindly asking an LLM to guess if peanut butter and soy sauce harmonize, TabPFN evaluates continuous biochemical feature vectors in a single forward pass under 45 milliseconds. Once validated, Google's open-weight Gemma 2 crafts radical sloth shortcuts.",
+        duration: 24
+      },
+      {
+        badge: "SCENE 5 OF 6",
+        tag: "Production Stack & Open Innovation",
+        headline: "slothchef-ai.onrender.com (Live Full-Stack on Render)",
+        quote: "Private fridge telemetry. 100% offline-resilient. Zero token anxiety.",
+        bullets: [
+          "Hosted on Render: Multi-stage Dockerfile serving React 19 SPA & FastAPI backend",
+          "Infrastructure-as-Code: 1-Click render.yaml Blueprint with /api/health monitoring",
+          "Why Open Innovation: Midnight pantry habits stay strictly private on your machine"
+        ],
+        sideHighlight: "PARTNER TECH:<br><span style='color: #46E3B7;'>Deployed on Render</span>",
+        voice: "SlothChef is deployed live on Render via a multi-stage Docker build bundling our React 19 frontend and FastAPI backend into a single unified service. Why does open innovation matter? Because your late-night fridge habits are intensely private—they shouldn't be fed to corporate ad brokers. And open-weight models run 100% offline in a campervan or power outage with zero token billing anxiety.",
+        duration: 24
+      },
+      {
+        badge: "SCENE 6 OF 6",
+        tag: "Outro & Call to Action",
+        headline: "Built for DEV Hacktoberfest 2026: Week 3 (Slow and Steady)",
+        quote: "Life is too short to wash colanders. Let AI do the dishes.",
+        bullets: [
+          "Live Hosted Demo: https://slothchef-ai.onrender.com",
+          "GitHub Repository: https://github.com/tribhu05/slothchef-ai",
+          "Benchmark Proven: Reclaims 38 minutes of human life & eliminates 6 dirty dishes"
+        ],
+        sideHighlight: "INTERNATIONAL SLOTH DAY<br><span style='color: #F4D779;'>October 2026</span>",
+        voice: "SlothChef proves that moving slowly and conserving energy isn't weakness; it's peak evolutionary efficiency. Try it live on Render at slothchef-ai.onrender.com, inspect the code on GitHub, and celebrate International Sloth Day by letting AI do the dishes. Thanks for watching!",
+        action: "confetti",
+        duration: 20
+      }
+    ];
+
+    let currentSceneIdx = 0;
+    let isPlaying = false;
+    let voiceEnabled = true;
+    let musicEnabled = true;
+    let sceneTimer = null;
+    let audioCtx = null;
+    let musicGain = null;
+
+    function initAudio() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        startLoFiMusic();
+      }
+    }
+
+    // Synthesized Lo-Fi Background Music Chords
+    function startLoFiMusic() {
+      if (!audioCtx) return;
+      musicGain = audioCtx.createGain();
+      musicGain.gain.setValueAtTime(musicEnabled ? 0.05 : 0, audioCtx.currentTime);
+      musicGain.connect(audioCtx.destination);
+
+      const notes = [261.63, 329.63, 392.00, 493.88]; // C, E, G, Bmaj7
+      notes.forEach((freq, idx) => {
+        const osc = audioCtx.createOscillator();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(freq / 2, audioCtx.currentTime);
+        osc.connect(musicGain);
+        osc.start();
+      });
+    }
+
+    // Real SlothChef Microwave Ding Bell Chime (587Hz -> 880Hz)
+    function playDingChime() {
+      if (!audioCtx) return;
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(587.33, audioCtx.currentTime); // D5
+      osc.frequency.exponentialRampToValueAtTime(880, audioCtx.currentTime + 0.08); // A5
+      gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 1.2);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start();
+      osc.stop(audioCtx.currentTime + 1.2);
+    }
+
+    function renderScene(idx) {
+      const s = SCENES[idx];
+      document.getElementById('sceneBadge').innerText = s.badge;
+      document.getElementById('sceneTag').innerText = s.tag;
+      document.getElementById('voiceoverText').innerText = s.voice;
+      document.getElementById('progressBar').style.width = `${((idx + 1) / SCENES.length) * 100}%`;
+
+      const content = document.getElementById('sceneContent');
+      content.innerHTML = `
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 2rem;">
+          <div>
+            <h2 style="font-size: 28px; font-weight: 800; color: #F4D779; margin-bottom: 8px; letter-spacing: -0.02em;">
+              ${s.headline}
+            </h2>
+            <div style="padding: 10px 16px; background: rgba(0,0,0,0.3); border-left: 3px solid #F4D779; border-radius: 6px; font-style: italic; color: #F5F2EB; font-size: 15px; margin-bottom: 1.5rem;">
+              "${s.quote}"
+            </div>
+          </div>
+          <div style="background: #202020; border: 1px solid rgba(255,255,255,0.08); padding: 14px 20px; border-radius: 16px; text-align: right; min-width: 220px; font-family: 'Space Grotesk', monospace; font-size: 12px; font-weight: 700;">
+            ${s.sideHighlight}
+          </div>
+        </div>
+
+        <div style="display: grid; gap: 12px; margin-top: 1rem;">
+          ${s.bullets.map(b => `
+            <div style="background: rgba(36, 36, 36, 0.8); border: 1px solid rgba(255,255,255,0.06); padding: 14px 18px; border-radius: 14px; font-size: 14px; color: #F5F2EB; display: flex; align-items: center; gap: 10px;">
+              <span style="color: #F4D779;">⚡</span>
+              <span>${b}</span>
+            </div>
+          `).join('')}
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 1.5rem; border-top: 1px solid rgba(255,255,255,0.06); font-size: 12px; color: #A5A39D; font-family: monospace;">
+          <span>Prior Labs TabPFN-3.5 • Google Gemma 2 • Render Cloud</span>
+          <span>https://slothchef-ai.onrender.com</span>
+        </div>
+      `;
+
+      if (s.action === 'ding') {
+        setTimeout(playDingChime, 1500);
+      } else if (s.action === 'confetti') {
+        confetti({ particleCount: 80, spread: 70, origin: { y: 0.6 } });
+      }
+    }
+
+    function speakText(text, callback) {
+      if (!voiceEnabled || !('speechSynthesis' in window)) {
+        if (callback) setTimeout(callback, 6000);
+        return;
+      }
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.rate = 1.05;
+      utterance.pitch = 1.0;
+      utterance.onend = () => { if (callback && isPlaying) callback(); };
+      utterance.onerror = () => { if (callback && isPlaying) callback(); };
+      window.speechSynthesis.speak(utterance);
+    }
+
+    function playScene(idx) {
+      if (idx >= SCENES.length) {
+        isPlaying = false;
+        document.getElementById('playBtn').innerText = '▶ Replay Demo';
+        return;
+      }
+      currentSceneIdx = idx;
+      renderScene(idx);
+
+      if (isPlaying) {
+        speakText(SCENES[idx].voice, () => {
+          if (isPlaying) {
+            sceneTimer = setTimeout(() => {
+              playScene(idx + 1);
+            }, 1200);
+          }
+        });
+      }
+    }
+
+    function togglePlay() {
+      initAudio();
+      isPlaying = !isPlaying;
+      const btn = document.getElementById('playBtn');
+      if (isPlaying) {
+        btn.innerText = '⏸ Pause Demo';
+        btn.classList.add('primary');
+        playScene(currentSceneIdx);
+      } else {
+        btn.innerText = '▶ Resume Demo';
+        window.speechSynthesis.cancel();
+        clearTimeout(sceneTimer);
+      }
+    }
+
+    function nextScene() {
+      currentSceneIdx = (currentSceneIdx + 1) % SCENES.length;
+      playScene(currentSceneIdx);
+    }
+
+    function prevScene() {
+      currentSceneIdx = (currentSceneIdx - 1 + SCENES.length) % SCENES.length;
+      playScene(currentSceneIdx);
+    }
+
+    function restartDemo() {
+      currentSceneIdx = 0;
+      isPlaying = true;
+      document.getElementById('playBtn').innerText = '⏸ Pause Demo';
+      playScene(0);
+    }
+
+    function toggleVoice() {
+      voiceEnabled = !voiceEnabled;
+      document.getElementById('voiceToggle').innerText = `🔊 Voice: ${voiceEnabled ? 'ON' : 'OFF'}`;
+      if (!voiceEnabled) window.speechSynthesis.cancel();
+    }
+
+    function toggleMusic() {
+      musicEnabled = !musicEnabled;
+      document.getElementById('musicToggle').innerText = `🎵 Lo-Fi Music: ${musicEnabled ? 'ON' : 'OFF'}`;
+      if (musicGain && audioCtx) {
+        musicGain.gain.setValueAtTime(musicEnabled ? 0.05 : 0, audioCtx.currentTime);
+      }
+    }
+
+    function toggleFullscreen() {
+      const el = document.getElementById('cinemaFrame');
+      if (!document.fullscreenElement) {
+        el.requestFullscreen().catch(err => alert(err.message));
+      } else {
+        document.exitFullscreen();
+      }
+    }
+
+    // Initial render of scene 0
+    renderScene(0);
+  </script>
+</body>
+</html>

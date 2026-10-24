@@ -34,7 +34,9 @@ frontend/node_modules/
 .npm
 *.tsbuildinfo
 
-# OS & Environment
+# Video production temp clips
+video_production/temp_clips/
+
 .DS_Store
 Thumbs.db
 .env
