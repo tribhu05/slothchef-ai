@@ -1,6 +1,9 @@
 # YouTube Metadata: SlothChef AI Demo Video
 ### *Optimized for DEV Hacktoberfest 2026: Week 3 (Slow and Steady)*
 
+* **Published YouTube URL**: [https://youtu.be/XFxFhPqbFAg](https://youtu.be/XFxFhPqbFAg)
+* **YouTube Video ID**: `XFxFhPqbFAg`
+
 ## 1. Video Title Options
 
 * **Primary Title (Recommended)**:  

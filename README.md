@@ -13,6 +13,7 @@
 [![Google Gemma 2](https://img.shields.io/badge/AI-Google_Gemma_2-ea4335.svg?style=flat-square&logo=google)](https://ai.google.dev/gemma)
 [![Render](https://img.shields.io/badge/Hosted%20On-Render-46E3B7.svg?style=flat-square&logo=render)](https://slothchef-ai.onrender.com)
 [![Docker](https://img.shields.io/badge/Container-Multi--Stage%20Docker-2496ed.svg?style=flat-square&logo=docker)](Dockerfile)
+[![Demo Video](https://img.shields.io/badge/Demo%20Video-YouTube-red.svg?style=flat-square&logo=youtube)](https://youtu.be/XFxFhPqbFAg)
 
 <br/>
 
@@ -21,13 +22,27 @@
 
 <br/>
 
-[🚀 Live Hosted Demo](https://slothchef-ai.onrender.com) • [📝 DEV.to Submission Article](ARTICLE_DRAFT.md) • [📊 Benchmark Report](docs/benchmark_report.md) • [🧪 Test Evidence](docs/technical-evidence-report.md)
+[🚀 Live Hosted Demo](https://slothchef-ai.onrender.com) • [🎬 Video Demo](https://youtu.be/XFxFhPqbFAg) • [📝 DEV.to Submission Article](ARTICLE_DRAFT.md) • [📊 Benchmark Report](docs/benchmark_report.md) • [🧪 Test Evidence](docs/technical-evidence-report.md)
 
 <p align="center">
   <a href="https://render.com/deploy?repo=https://github.com/tribhu05/slothchef-ai">
     <img src="https://render.com/images/deploy-to-render-button.svg" alt="Deploy to Render" />
   </a>
 </p>
+
+</div>
+
+---
+
+## 🎬 Video Walkthrough & Demo
+
+Watch the complete 2-minute 50-second production walkthrough, architecture breakdown, and live app demo:
+
+<div align="center">
+
+[![SlothChef AI Demo Video](https://img.youtube.com/vi/XFxFhPqbFAg/maxresdefault.jpg)](https://youtu.be/XFxFhPqbFAg)
+
+**[▶️ Click to Watch the Official SlothChef Demo on YouTube](https://youtu.be/XFxFhPqbFAg)**
 
 </div>
 

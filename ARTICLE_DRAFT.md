@@ -14,6 +14,7 @@ Built for **DEV Hacktoberfest 2026: Week 3 ("Slow and Steady" / International Sl
 [![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/tribhu05/slothchef-ai)
 [![GitHub](https://img.shields.io/badge/GitHub-tribhu05%2Fslothchef--ai-181717.svg?style=flat-square&logo=github)](https://github.com/tribhu05/slothchef-ai)
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-slothchef--ai.onrender.com-46E3B7.svg?style=flat-square&logo=render)](https://slothchef-ai.onrender.com)
+[![Demo Video](https://img.shields.io/badge/Demo%20Video-YouTube-red.svg?style=flat-square&logo=youtube)](https://youtu.be/XFxFhPqbFAg)
 [![TabPFN-3.5](https://img.shields.io/badge/Prior_Labs-TabPFN--3.5-7c3aed.svg?style=flat-square)](https://priorlabs.ai)
 [![Google Gemma 2](https://img.shields.io/badge/Google-Gemma_2_2B-ea4335.svg?style=flat-square&logo=google)](https://ai.google.dev/gemma)
 
@@ -49,6 +50,16 @@ Developers don't need a Michelin-star MasterChef tutorial. We need an **extreme 
 * **Knife & Board Bound**: $\mathcal{O}(0 \text{ cutting boards dirty})$.
 
 Meet **SlothChef 🍳🦥**.
+
+---
+
+## 🎬 Video Walkthrough & Demo
+
+Watch the complete 2-minute 50-second architectural breakdown and live product demo:
+
+{% youtube XFxFhPqbFAg %}
+
+*(Direct YouTube Link: [https://youtu.be/XFxFhPqbFAg](https://youtu.be/XFxFhPqbFAg))*
 
 ---
 
@@ -283,6 +294,7 @@ We built the frontend to feel like a premium editorial dark canvas (`#242424` ch
 ## 🔗 Try It Live & Inspect the Code
 
 * 🌐 **Live Web App on Render**: [https://slothchef-ai.onrender.com](https://slothchef-ai.onrender.com)
+* 🎬 **Official Demo Video**: [https://youtu.be/XFxFhPqbFAg](https://youtu.be/XFxFhPqbFAg)
 * 💻 **GitHub Repository**: [https://github.com/tribhu05/slothchef-ai](https://github.com/tribhu05/slothchef-ai)
 * 🚀 **1-Click Render Deploy**: [Deploy to Render](https://render.com/deploy?repo=https://github.com/tribhu05/slothchef-ai)
 * 🧪 **Automated Test Suite**: 33 passing backend tests (`pytest backend/tests -v`)
