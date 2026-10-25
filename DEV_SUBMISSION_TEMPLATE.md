@@ -1,7 +1,7 @@
 ---
 title: "SlothChef: The Extreme Low-Effort Cooking Engine Powered by Prior Labs TabPFN-3.5 and Open-Weight AI"
 published: true
-tags: devchallenge, hacktoberfest, tabpfn, render
+tags: devchallenge, hf26challenge, tabpfn, render
 cover_image: https://raw.githubusercontent.com/tribhu05/slothchef-ai/main/docs/screenshots/01-landing-and-contract.png
 canonical_url: https://github.com/tribhu05/slothchef-ai
 description: "For when it's 2:30 AM, you refuse to put on pants, refuse to wash 6 prep bowls, and have 4 scraps left in the fridge. Powered by Prior Labs TabPFN-3.5 and Google Gemma 2 on Render."
@@ -11,12 +11,12 @@ description: "For when it's 2:30 AM, you refuse to put on pants, refuse to wash 
 
 > *"The three-toed sloth does not move slowly because it is deficient. It moves slowly because it has mastered the universe's ultimate evolutionary secret: conservation of energy is the supreme virtue."*
 
-[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/tribhu05/slothchef-ai)
-[![GitHub](https://img.shields.io/badge/GitHub-tribhu05%2Fslothchef--ai-181717.svg?style=flat-square&logo=github)](https://github.com/tribhu05/slothchef-ai)
-[![Live Demo](https://img.shields.io/badge/Live%20Demo-slothchef--ai.onrender.com-46E3B7.svg?style=flat-square&logo=render)](https://slothchef-ai.onrender.com)
-[![Demo Video](https://img.shields.io/badge/Demo%20Video-YouTube-red.svg?style=flat-square&logo=youtube)](https://youtu.be/XFxFhPqbFAg)
-[![TabPFN-3.5](https://img.shields.io/badge/Prior_Labs-TabPFN--3.5-7c3aed.svg?style=flat-square)](https://priorlabs.ai)
-[![Google Gemma 2](https://img.shields.io/badge/Google-Gemma_2_2B-ea4335.svg?style=flat-square&logo=google)](https://ai.google.dev/gemma)
+---
+
+**Quick Links & Project Resources:**  
+🚀 **[Live Web App on Render](https://slothchef-ai.onrender.com)** • 🎬 **[Official YouTube Demo (2m 50s)](https://youtu.be/XFxFhPqbFAg)** • 💻 **[GitHub Repository (MIT)](https://github.com/tribhu05/slothchef-ai)** • 🧠 **[Prior Labs TabPFN-3.5](https://priorlabs.ai)** • 🔬 **[Google Gemma 2](https://ai.google.dev/gemma)**
+
+---
 
 ---
 
@@ -156,7 +156,7 @@ export function playMicrowaveBell(): void {
 
 SlothChef decouples culinary intelligence into a **two-stage open-model pipeline**:
 
-![Dual AI Architecture](https://raw.githubusercontent.com/tribhu05/slothchef-ai/main/docs/screenshots/07-dual-ai-architecture.png)
+![Dual AI Architecture](https://dev-to-uploads.s3.us-east-2.amazonaws.com/uploads/articles/ng58yf0kcqqrdws8few5.png)
 
 ```mermaid
 flowchart TD
