@@ -18,8 +18,6 @@ description: "For when it's 2:30 AM, you refuse to put on pants, refuse to wash 
 
 ---
 
----
-
 ## What I Built
 
 Every recipe website on the internet is actively gaslighting exhausted people. 
@@ -34,7 +32,7 @@ When you search for a recipe, food blogs demand you scroll past a 4,000-word mem
 
 **SlothChef** is the antidote: an **extreme low-effort, one-pan culinary survival engine** designed to reward radical laziness. Built for **International Sloth Day** and Hacktoberfest 2026 ("Slow and Steady"), SlothChef models kitchen exertion like strict algorithmic complexity:
 
-```
+```text
                        THE FORMAL SLOTH CONTRACT
  ┌──────────────────────────────────────────────────────────────────────────┐
  │  🍳  SPACE COMPLEXITY:   Exactly 1 Cooking Vessel (Pan, Pot, or Skillet) │
@@ -81,7 +79,7 @@ The compiled recipe enforces strict bounds: 1 skillet, 1 fork, 3 minutes active 
 ![Recipe Output with Radical Shortcuts](https://raw.githubusercontent.com/tribhu05/slothchef-ai/main/docs/screenshots/04-recipe-and-radical-shortcuts.png)
 
 #### 4. Hands-Free Cook-Along Mode & Microwave Bell
-High-contrast stove-side view with browser speech synthesis (reading steps aloud) and a dual-frequency synthesized microwave bell (D5 $\rightarrow$ A5) when timers finish. You never touch your phone with peanut-butter-covered fingers.
+High-contrast stove-side view with browser speech synthesis (reading steps aloud) and a dual-frequency synthesized microwave bell (D5 to A5) when timers finish. You never touch your phone with peanut-butter-covered fingers.
 
 ![Hands-Free Cook-Along Mode](https://raw.githubusercontent.com/tribhu05/slothchef-ai/main/docs/screenshots/05-hands-free-cook-along.png)
 
@@ -156,34 +154,7 @@ export function playMicrowaveBell(): void {
 
 SlothChef decouples culinary intelligence into a **two-stage open-model pipeline**:
 
-![Dual AI Architecture](https://dev-to-uploads.s3.us-east-2.amazonaws.com/uploads/articles/ng58yf0kcqqrdws8few5.png)
-
-```mermaid
-flowchart TD
-    subgraph Inputs["1. Kitchen Scavenge & Constraints"]
-        I["Scavenged Fridge Ingredients<br/>(e.g., Ramen + Peanut Butter + Sriracha + Soy)"]
-        SC["The Sloth Contract<br/>(Max 1 Pan • &lt; 5m Standing • 0 Cutting Boards)"]
-        I & SC --> FE["8-Dimensional Chemical Feature Extractor"]
-    end
-
-    subgraph TabPFN["2. Prior Labs TabPFN-3.5 Foundation Model"]
-        FE --> TP["TabPFN Tabular Bayesian Inference<br/>(Prior Labs Foundation Model)"]
-        TP --> VEC["Continuous Flavor Vector Engine<br/>• Umami Synergy Ratio [0..1]<br/>• Salt-to-Acid Equilibrium<br/>• Lipid Moisture Index<br/>• Predicted Palatability Score"]
-        TP --> CLAS["Pantry Meal Feasibility Classifier<br/>(READY vs. NEEDS_INGREDIENTS vs. NO_GOOD_MATCH)"]
-    end
-
-    subgraph Gemma["3. Google Gemma 2 (Local Open-Weight SLM)"]
-        VEC & CLAS --> G2["Google Gemma 2 2B-IT<br/>(Culinary Heuristic & Instruction Engine)"]
-        G2 --> R["Sequential 1-Pan Cooking Steps"]
-        G2 --> SC_ENF["Enforce Radical Sloth Shortcuts<br/>(Mug Crush • Hand Tear • Pan Direct Eat)"]
-    end
-
-    subgraph Frontend["4. React 19 Studio & Audio Telemetry"]
-        R & SC_ENF --> UI["Editorial Dark UI (#242424)"]
-        UI --> SP["Hands-Free SpeechSynthesis Readout"]
-        UI --> MIC["Web Audio Dual-Frequency Microwave Chime"]
-    end
-```
+![SlothChef Architecture](https://dev-to-uploads.s3.us-east-2.amazonaws.com/uploads/articles/ng58yf0kcqqrdws8few5.png)
 
 ### 1. Prior Labs TabPFN-3.5 (Tabular Foundation Model)
 Large language models notoriously hallucinate continuous math and chemistry. We use **Prior Labs TabPFN-3.5** to evaluate flavor compatibility.
@@ -237,19 +208,11 @@ We benchmarked 100 randomly generated SlothChef pantry combinations against conv
 
 | Physical Effort Metric | Traditional Online Recipes (Mean) | SlothChef (Hard Enforced Cap) | Sloth Reduction (%) |
 | :--- | :--- | :--- | :--- |
-| **Cooking Vessels to Wash** | $3.4 \pm 0.8$ pots/pans | **Strictly $1$ vessel** | **$-70.6\%$** |
-| **Prep Dishes (Bowls, Ramekins)** | $2.8 \pm 1.2$ dishes | **Strictly $0$ bowls** | **$-100.0\%$** |
-| **Knives / Cutting Boards Dirty** | $1.9 \pm 0.4$ items | **Strictly $0$ (Mug Crush / Hand Tear)** | **$-100.0\%$** |
-| **Active Standing Time** | $28.5\text{ mins}$ | **$3.2\text{ mins}$** | **$-88.7\%$** |
-| **Total Post-Meal Cleanup Time** | $14.2\text{ mins}$ | **$1.8\text{ mins}$** | **$-87.3\%$** |
-
-```mermaid
-xychart-beta
-    title "Active Physical Standing Time: Traditional vs SlothChef (Minutes)"
-    x-axis ["AllRecipes Average", "NYT Weeknight", "Standard Stirfry", "SlothChef (Hard Cap)"]
-    y-axis "Minutes on Feet" 0 --> 35
-    bar [32, 26, 22, 3]
-```
+| **Cooking Vessels to Wash** | 3.4 ± 0.8 pots/pans | **Strictly 1 vessel** | **-70.6%** |
+| **Prep Dishes (Bowls, Ramekins)** | 2.8 ± 1.2 dishes | **Strictly 0 bowls** | **-100.0%** |
+| **Knives / Cutting Boards Dirty** | 1.9 ± 0.4 items | **Strictly 0 (Mug Crush / Hand Tear)** | **-100.0%** |
+| **Active Standing Time** | 28.5 mins | **3.2 mins** | **-88.7%** |
+| **Total Post-Meal Cleanup Time** | 14.2 mins | **1.8 mins** | **-87.3%** |
 
 ### The Real-World Test: The Midnight Dan-Dan Rescue
 We put SlothChef to the test in a real late-night kitchen using 1 brick of ramen, 2 tbsp peanut butter, sriracha, and soy sauce:
@@ -261,7 +224,7 @@ We put SlothChef to the test in a real late-night kitchen using 1 brick of ramen
 
 ![Appetizing Midnight Dan-Dan Noodle Result](https://raw.githubusercontent.com/tribhu05/slothchef-ai/main/docs/screenshots/06-appetizing-dan-dan-result.jpg)
 
-**Net Savings**: $\approx 38$ minutes of human standing time and 6 dirty dishes eliminated.
+**Net Savings**: ~38 minutes of human standing time and 6 dirty dishes eliminated.
 
 ---
 
